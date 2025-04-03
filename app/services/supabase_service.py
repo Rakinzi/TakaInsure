@@ -72,6 +72,12 @@ def store_user_data(user_data):
 
 def validate_date_of_birth(dob):
     logger.info(f"Validating date of birth: {dob}")
+    
+    # Check for empty or whitespace-only input
+    if not dob or dob.strip() == "":
+        logger.warning("Empty date of birth provided")
+        return False, "Please provide a date of birth"
+        
     try:
         import datetime
         formats = [

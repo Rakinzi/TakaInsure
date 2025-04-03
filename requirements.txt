@@ -3,3 +3,4 @@ flask_cors
 supabase
 twilio
 python-dotenv
+Pillow

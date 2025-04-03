@@ -5,7 +5,7 @@ import os
 import logging
 
 from app.models.user_state import UserState
-from app.services.supabase_service import store_user_data, validate_date_of_birth
+from app.services.supabase_service import store_user_data, validate_date_of_birth, get_user_by_phone
 
 logger = logging.getLogger(__name__)
 
@@ -13,14 +13,32 @@ whatsapp_bp = Blueprint('whatsapp', __name__)
 
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+APP_URL = os.getenv("APP_URL", "https://takainsure.app")
 
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 user_states = {}
 
 def handle_welcome(user_state, message_body):
-    logger.info(f"Starting registration for user {user_state.phone_number}")
-    reply = "Welcome to our insurance service! I'll help you get started with your application. First, please tell me your full name."
+    # Check if user is already registered
+    existing_user = get_user_by_phone(user_state.phone_number)
+    
+    if existing_user:
+        logger.info(f"Returning user detected: {user_state.phone_number}")
+        user_name = existing_user.get('full_name', 'Valued Customer')
+        user_id = existing_user.get('policyholder_id', '')
+        
+        app_link = f"{APP_URL}/dashboard?uid={user_id}"
+        
+        reply = f"Hi {user_name}! You're already registered with TakaInsure. "
+        reply += f"Please click this link to access our app and enjoy the full features of the TakaInsure App: {app_link}\n\n"
+        reply += "Note: Your unique ID is confidential and should not be shared with anyone."
+        
+        user_state.current_step = "complete"
+        return reply
+    
+    logger.info(f"Starting registration for new user {user_state.phone_number}")
+    reply = "Welcome to TakaInsure! I'll help you get started with your application. First, please tell me your full name."
     user_state.current_step = "collect_name"
     return reply
 
@@ -74,7 +92,13 @@ def handle_confirm_details(user_state, message_body):
             
             if policyholder_id:
                 logger.info(f"Successfully stored user data for {user_state.phone_number}, ID: {policyholder_id}")
-                reply = f"Thank you! Your application has been submitted successfully. Your reference number is {policyholder_id}. We'll get back to you shortly."
+                
+                app_link = f"{APP_URL}/dashboard?uid={policyholder_id}"
+                
+                reply = f"Thank you! Your registration with TakaInsure is complete.\n\n"
+                reply += f"Your unique ID is: {policyholder_id}\n"
+                reply += "Important: This ID is confidential and should not be shared with anyone.\n\n"
+                reply += f"Click here to access our app and explore all features: {app_link}"
             else:
                 logger.error(f"Failed to store user data for {user_state.phone_number} in Supabase")
                 reply = "Sorry, there was an error processing your application. Please try again later."
@@ -137,7 +161,7 @@ def webhook():
             response = handler(user_state, message_body)
         else:
             logger.warning(f"No handler found for step: {user_state.current_step}")
-            response = "Welcome to our insurance service! To register, please type 'register' or 'start'."
+            response = "Welcome to TakaInsure! To register or check your status, please type 'register' or 'start'."
     except Exception as e:
         logger.exception(f"Error handling message from {masked_number}: {str(e)}")
         response = "Sorry, something went wrong. Please type 'register' or 'start' to try again."

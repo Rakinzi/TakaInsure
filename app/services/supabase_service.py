@@ -23,6 +23,33 @@ def get_supabase_client():
 
 supabase = get_supabase_client()
 
+def get_user_by_phone(phone_number):
+    """
+    Look up a user by their phone number
+    Returns the user data if found, None otherwise
+    """
+    if not supabase:
+        logger.error("Cannot look up user: Supabase client is not initialized")
+        return None
+        
+    try:
+        logger.info(f"Looking up user by phone number")
+        # Mask the phone number in logs
+        masked_number = '****' + phone_number[-4:] if phone_number and len(phone_number) > 4 else phone_number
+        logger.debug(f"Searching for user with phone: {masked_number}")
+        
+        response = supabase.table("policyholder").select("*").eq("contact_details", phone_number).execute()
+        
+        if response.data and len(response.data) > 0:
+            logger.info(f"User found with phone number {masked_number}")
+            return response.data[0]
+        else:
+            logger.info(f"No user found with phone number {masked_number}")
+            return None
+    except Exception as e:
+        logger.exception(f"Error looking up user by phone: {str(e)}")
+        return None
+
 def store_user_data(user_data):
     if not supabase:
         logger.error("Cannot store user data: Supabase client is not initialized")
@@ -30,10 +57,6 @@ def store_user_data(user_data):
     
     # Mask sensitive data in logs
     safe_data = user_data.copy()
-    if 'national_id' in safe_data:
-        id_value = safe_data['national_id']
-        if id_value and len(str(id_value)) > 4:
-            safe_data['national_id'] = '****' + str(id_value)[-4:]
     if 'contact_details' in safe_data:
         contact = safe_data['contact_details']
         if contact and len(str(contact)) > 4:
@@ -73,7 +96,7 @@ def store_user_data(user_data):
 def validate_date_of_birth(dob):
     logger.info(f"Validating date of birth: {dob}")
     
-    # Check for empty or whitespace-only input
+    # Handle empty input
     if not dob or dob.strip() == "":
         logger.warning("Empty date of birth provided")
         return False, "Please provide a date of birth"

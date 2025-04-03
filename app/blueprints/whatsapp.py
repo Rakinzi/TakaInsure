@@ -5,7 +5,6 @@ import os
 import logging
 
 from app.models.user_state import UserState
-from app.services.ocr_service import extract_text_from_image, process_id_text
 from app.services.supabase_service import store_user_data, validate_date_of_birth
 
 logger = logging.getLogger(__name__)
@@ -34,6 +33,12 @@ def handle_collect_name(user_state, message_body):
 
 def handle_collect_dob(user_state, message_body):
     logger.info(f"Attempting to validate DOB for user {user_state.phone_number}: {message_body}")
+    
+    # Handle empty input
+    if not message_body or message_body.strip() == "":
+        logger.warning(f"Empty DOB provided by user {user_state.phone_number}")
+        return "Please enter a valid date format (YYYY-MM-DD)."
+    
     is_valid, formatted_dob = validate_date_of_birth(message_body)
     if not is_valid:
         logger.warning(f"Invalid DOB format provided by user {user_state.phone_number}: {message_body}")
@@ -41,57 +46,19 @@ def handle_collect_dob(user_state, message_body):
     
     logger.info(f"Valid DOB collected for user {user_state.phone_number}: {formatted_dob}")
     user_state.user_data["date_of_birth"] = formatted_dob
-    reply = "Great! Now, please enter your national ID number."
-    user_state.current_step = "collect_id_number"
-    return reply
-
-def handle_collect_id_number(user_state, message_body):
-    logger.info(f"Collected ID number for user {user_state.phone_number}")
-    user_state.user_data["national_id"] = message_body
-    reply = "Thank you. Now, please enter your address."
+    reply = "Great! Now, please enter your address."
     user_state.current_step = "collect_address"
     return reply
 
 def handle_collect_address(user_state, message_body):
     logger.info(f"Collected address for user {user_state.phone_number}")
     user_state.user_data["address"] = message_body
-    reply = "Almost done! Please send a clear photo of your ID document."
-    user_state.current_step = "collect_id_image"
-    return reply
-
-def handle_collect_id_image(user_state, media_url):
-    if not media_url:
-        logger.warning(f"No media URL provided for user {user_state.phone_number} ID image")
-        return "Please send a clear photo of your ID document."
     
-    logger.info(f"Received ID image from user {user_state.phone_number}")
-    user_state.user_data["id_image_url"] = media_url
-    
-    logger.info(f"Attempting OCR on ID image for user {user_state.phone_number}")
-    extracted_text = extract_text_from_image(media_url)
-    
-    if extracted_text:
-        logger.info(f"OCR successful for user {user_state.phone_number}, processing text")
-        extracted_data = process_id_text(extracted_text)
-        logger.info(f"Extracted data fields: {list(extracted_data.keys())}")
-    else:
-        logger.warning(f"OCR failed or returned no text for user {user_state.phone_number}")
-        extracted_data = {}
-    
+    # Skip ID collection and image processing
     confirmation_message = "Please confirm your details:\n\n"
-    
-    for field, auto_value in extracted_data.items():
-        existing_value = user_state.user_data.get(field)
-        
-        if auto_value and not existing_value:
-            logger.info(f"Using OCR data for field {field} for user {user_state.phone_number}")
-            user_state.user_data[field] = auto_value
-            confirmation_message += f"{field.replace('_', ' ').title()}: {auto_value} (extracted from ID)\n"
-        elif auto_value and existing_value and auto_value != existing_value:
-            logger.info(f"Discrepancy in {field} for user {user_state.phone_number}: User input vs OCR")
-            confirmation_message += f"{field.replace('_', ' ').title()}: {existing_value} (you provided) / {auto_value} (from ID)\n"
-        else:
-            confirmation_message += f"{field.replace('_', ' ').title()}: {existing_value}\n"
+    confirmation_message += f"Full Name: {user_state.user_data['full_name']}\n"
+    confirmation_message += f"Date of Birth: {user_state.user_data['date_of_birth']}\n"
+    confirmation_message += f"Address: {user_state.user_data['address']}\n"
     
     confirmation_message += "\nIs this information correct? Reply YES to confirm or NO to restart."
     user_state.current_step = "confirm_details"
@@ -123,9 +90,7 @@ def handle_confirm_details(user_state, message_body):
         user_state.user_data = {
             "full_name": None,
             "date_of_birth": None,
-            "national_id": None,
             "address": None,
-            "id_image_url": None,
         }
     
     return reply
@@ -134,9 +99,7 @@ state_handlers = {
     "welcome": handle_welcome,
     "collect_name": handle_collect_name,
     "collect_dob": handle_collect_dob,
-    "collect_id_number": handle_collect_id_number,
     "collect_address": handle_collect_address,
-    "collect_id_image": handle_collect_id_image,
     "confirm_details": handle_confirm_details,
 }
 
@@ -163,26 +126,18 @@ def webhook():
         user_state.user_data = {
             "full_name": None,
             "date_of_birth": None,
-            "national_id": None,
             "address": None,
-            "id_image_url": None,
         }
     
     response = None
     try:
-        media_url = None
-        if num_media > 0 and user_state.current_step == "collect_id_image":
-            media_url = request.values.get('MediaUrl0')
-            logger.info(f"Media received from {masked_number}, URL available")
-            response = handle_collect_id_image(user_state, media_url)
+        handler = state_handlers.get(user_state.current_step)
+        if handler:
+            logger.debug(f"Calling handler for step: {user_state.current_step}")
+            response = handler(user_state, message_body)
         else:
-            handler = state_handlers.get(user_state.current_step)
-            if handler:
-                logger.debug(f"Calling handler for step: {user_state.current_step}")
-                response = handler(user_state, message_body)
-            else:
-                logger.warning(f"No handler found for step: {user_state.current_step}")
-                response = "Welcome to our insurance service! To register, please type 'register' or 'start'."
+            logger.warning(f"No handler found for step: {user_state.current_step}")
+            response = "Welcome to our insurance service! To register, please type 'register' or 'start'."
     except Exception as e:
         logger.exception(f"Error handling message from {masked_number}: {str(e)}")
         response = "Sorry, something went wrong. Please type 'register' or 'start' to try again."

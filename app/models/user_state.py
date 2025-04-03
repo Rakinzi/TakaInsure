@@ -5,8 +5,6 @@ class UserState:
         self.user_data = {
             "full_name": None,
             "date_of_birth": None,
-            "national_id": None,
             "address": None,
             "contact_details": None,
-            "id_image_url": None,
         }

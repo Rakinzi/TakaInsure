@@ -1,0 +1,7 @@
+# Ignore large model weights
+*.pb
+*.weights
+*.cfg
+
+# Specific folders
+app/car-make/yolo-coco/

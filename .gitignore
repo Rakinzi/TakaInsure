@@ -1,0 +1,6 @@
+# Ignore all .pb files anywhere
+*.pb
+
+# Ignore everything in the YOLO folder
+app/car-make/yolo-coco/*
+logs/app.log

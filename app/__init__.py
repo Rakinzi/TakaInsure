@@ -54,13 +54,15 @@ def create_app():
     
     # Register blueprints
     from app.blueprints.whatsapp import whatsapp_bp
+    from app.blueprints.car_damage import car_damage_bp
     
     app.register_blueprint(whatsapp_bp, url_prefix='/api/whatsapp')
+    app.register_blueprint(car_damage_bp, url_prefix='/api/car-damage')
     
     @app.route('/')
     def index():
         logger.info("Root endpoint accessed")
-        return "Insurance WhatsApp API is running!"
+        return "Insurance API is running!"
     
     logger.info("Application initialized successfully")
     return app

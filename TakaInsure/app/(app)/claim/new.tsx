@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, Platform, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Location from 'expo-location';
 
 // Types for claim data
 type IncidentType = 'car_accident' | 'property_damage' | 'personal_injury' | 'other';
@@ -9,9 +11,11 @@ type IncidentType = 'car_accident' | 'property_damage' | 'personal_injury' | 'ot
 export default function NewClaimScreen() {
   const router = useRouter();
   const [incidentDate, setIncidentDate] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [incidentLocation, setIncidentLocation] = useState('');
   const [incidentDescription, setIncidentDescription] = useState('');
   const [incidentType, setIncidentType] = useState<IncidentType | null>(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   const handleNext = () => {
     // Basic validation
@@ -37,6 +41,63 @@ export default function NewClaimScreen() {
     } catch (error) {
       console.error('Error proceeding to upload:', error);
       Alert.alert('Error', 'There was a problem creating your claim. Please try again.');
+    }
+  };
+
+  const onDateChange = (event: any, date?: Date) => {
+    const currentDate = date || new Date();
+    setShowDatePicker(Platform.OS === 'ios'); // Only iOS keeps the picker open
+    if (date) {
+      setIncidentDate(currentDate.toISOString());
+    }
+  };
+
+  const formatDate = (isoString: string) => {
+    if (!isoString) return '';
+    
+    const date = new Date(isoString);
+    return date.toLocaleDateString();
+  };
+
+  const getLocationAsync = async () => {
+    setGettingLocation(true);
+    try {
+      // Ask for location permission
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Please allow location access to use this feature');
+        setGettingLocation(false);
+        return;
+      }
+      
+      // Get current location
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      
+      // Get address from coordinates
+      const geocode = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      
+      if (geocode.length > 0) {
+        const address = geocode[0];
+        const locationString = [
+          address.street,
+          address.city,
+          address.region,
+          address.country
+        ].filter(Boolean).join(', ');
+        
+        setIncidentLocation(locationString);
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
+      Alert.alert('Error', 'Failed to get your current location. Please enter it manually.');
+    } finally {
+      setGettingLocation(false);
     }
   };
 
@@ -75,20 +136,50 @@ export default function NewClaimScreen() {
 
         <View className="bg-white rounded-xl p-6 shadow-sm mb-6">
           <Text className="text-primary font-bold mb-2">When did the incident occur?</Text>
-          <TextInput
+          
+          {/* Date picker field */}
+          <TouchableOpacity 
+            onPress={() => setShowDatePicker(true)}
             className="border border-gray-300 rounded-lg p-4 mb-4"
-            placeholder="YYYY-MM-DD"
-            value={incidentDate}
-            onChangeText={setIncidentDate}
-          />
+          >
+            <Text className="text-gray-700">
+              {incidentDate ? formatDate(incidentDate) : 'Select date'}
+            </Text>
+          </TouchableOpacity>
+          
+          {/* Date picker modal */}
+          {showDatePicker && (
+            <DateTimePicker
+              value={new Date(incidentDate || Date.now())}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+            />
+          )}
 
           <Text className="text-primary font-bold mb-2">Where did the incident occur?</Text>
-          <TextInput
-            className="border border-gray-300 rounded-lg p-4 mb-4"
-            placeholder="Enter location"
-            value={incidentLocation}
-            onChangeText={setIncidentLocation}
-          />
+          
+          {/* Location input with current location button */}
+          <View className="mb-4">
+            <TextInput
+              className="border border-gray-300 rounded-lg p-4"
+              placeholder="Enter location"
+              value={incidentLocation}
+              onChangeText={setIncidentLocation}
+            />
+            
+            <TouchableOpacity 
+              onPress={getLocationAsync}
+              disabled={gettingLocation}
+              className="absolute right-2 top-2 bg-secondary p-2 rounded-md"
+            >
+              {gettingLocation ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text className="text-white text-xs">Current Location</Text>
+              )}
+            </TouchableOpacity>
+          </View>
 
           <Text className="text-primary font-bold mb-2">Describe the incident</Text>
           <TextInput

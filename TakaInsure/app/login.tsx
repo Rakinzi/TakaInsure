@@ -3,7 +3,6 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Imag
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authenticatePolicyholder } from '../services/supabaseAuth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -30,7 +29,6 @@ export default function LoginScreen() {
       const result = await authenticatePolicyholder(policyHolderId, phoneNumber);
       
       if (result.success) {
-        // Store user data in AsyncStorage - this is already done in the authenticatePolicyholder function
         console.log('Login successful:', result.user.full_name);
         
         // Navigate to the home screen

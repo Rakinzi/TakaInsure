@@ -29,8 +29,7 @@
         {
           "photosPermission": "The app accesses your photos to let you share them for insurance claims."
         }
-      ],
-      "expo-font"
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -3,7 +3,6 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter';
-import { UserProvider } from '../contexts/UserContext';
 import '../global.css'; // Import the tailwind styles
 
 // Keep splash screen visible while fonts load
@@ -28,7 +27,7 @@ export default function RootLayout() {
   }
 
   return (
-    <UserProvider>
+    <>
       <StatusBar style="light" />
       <Stack 
         screenOptions={{
@@ -57,6 +56,6 @@ export default function RootLayout() {
           options={{ headerShown: false }} 
         />
       </Stack>
-    </UserProvider>
+    </>
   );
 }

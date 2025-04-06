@@ -51,16 +51,16 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-primary">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 justify-center p-6">
         <View className="items-center mb-10">
           <Image
-            source={require('../assets/images/react-logo.png')}
+            source={require('../assets/images/logo.png')}
             className="w-24 h-24 mb-4"
             resizeMode="contain"
           />
-          <Text className="text-3xl font-bold text-light mb-2">Welcome Back</Text>
-          <Text className="text-light text-center">
+          <Text className="text-3xl font-bold text-black mb-2">Welcome Back</Text>
+          <Text className="text-secondary text-center font-bold">
             Login with your ID and phone number to continue
           </Text>
         </View>
@@ -97,7 +97,7 @@ export default function LoginScreen() {
         </View>
 
         <View className="items-center">
-          <Text className="text-light text-center mb-2">
+          <Text className="text-black text-center font-bold mb-2">
             Don't have an account yet?
           </Text>
           <Text className="text-tertiary font-semibold">

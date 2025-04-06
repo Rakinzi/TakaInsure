@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Platform } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,21 +30,36 @@ export default function SplashScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-primary">
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 justify-center items-center p-6">
         <Image
-          source={require('../assets/images/react-logo.png')}
-          className="w-32 h-32 mb-8"
+          source={require('../assets/images/takainsure.jpg')}
+          className="w-full h-auto"
           resizeMode="contain"
         />
-        <Text className="text-4xl font-bold text-light mb-2">TakaInsure</Text>
-        <Text className="text-light text-center text-lg mb-8">
+        {Platform.OS === "ios"  ? (
+          <>
+        <Text className="text-primary text-center text-lg">
+        Expanding Access to Microinsurance for the 
+        </Text>
+        <Text className="text-primary text-center text-lg mb-8">
+        Informal Sector
+        </Text>
+        </>
+        ) :(
+        <Text className="text-primary text-center text-lg mb-8">
           Expanding Access to Microinsurance for the Informal Sector
         </Text>
+        )
         
+        }
+
+        
+        {/*  */}
+
         <TouchableOpacity
           onPress={handleGetStarted}
-          className="bg-tertiary w-full py-4 rounded-xl items-center"
+          className="bg-secondary w-full py-4 rounded-xl items-center"
         >
           <Text className="text-light font-bold text-lg">Get Started</Text>
         </TouchableOpacity>

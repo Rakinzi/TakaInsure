@@ -89,9 +89,9 @@ export default function HomeScreen() {
               <Text className="text-light text-lg">Welcome back,</Text>
               <Text className="text-light text-2xl font-bold">{userData?.full_name || 'User'}</Text>
             </View>
-            <TouchableOpacity onPress={handleProfile} className="bg-tertiary p-2 rounded-full">
+            <TouchableOpacity onPress={handleProfile} className="bg-white p-2 rounded-full">
               <Image
-                source={require('../../assets/images/react-logo.png')}
+                source={require('../../assets/images/logo.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -112,10 +112,10 @@ export default function HomeScreen() {
             onPress={handleNewClaim}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-secondary"
           >
-            <View className="bg-tertiary/20 p-3 rounded-lg mr-4">
+            <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/react-logo.png')}
-                className="w-6 h-6"
+                source={require('../../assets/images/claim.png')}
+                className="w-8 h-8"
                 resizeMode="contain"
               />
             </View>
@@ -129,10 +129,10 @@ export default function HomeScreen() {
             onPress={handleViewPolicies}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-tertiary"
           >
-            <View className="bg-tertiary/20 p-3 rounded-lg mr-4">
+            <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/react-logo.png')}
-                className="w-6 h-6"
+                source={require('../../assets/images/compliant.png')}
+                className="w-8 h-8"
                 resizeMode="contain"
               />
             </View>
@@ -146,10 +146,10 @@ export default function HomeScreen() {
             onPress={() => {}}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-primary"
           >
-            <View className="bg-tertiary/20 p-3 rounded-lg mr-4">
+            <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/react-logo.png')}
-                className="w-6 h-6"
+                source={require('../../assets/images/secured.png')}
+                className="w-8 h-8"
                 resizeMode="contain"
               />
             </View>

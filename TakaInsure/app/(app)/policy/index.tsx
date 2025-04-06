@@ -48,7 +48,7 @@ export default function PolicyListScreen() {
 
   const handleViewPolicy = (policyId: string) => {
     router.push({
-      pathname: '/(app)/policy/detail',
+      pathname: '/(app)/policy/details',
       params: { policyId }
     });
   };

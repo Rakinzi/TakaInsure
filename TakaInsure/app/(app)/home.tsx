@@ -1,19 +1,59 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useUser } from '../../contexts/UserContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+type UserData = {
+  full_name: string;
+  policyholder_id: string;
+};
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, loading, logout } = useUser();
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      console.log('Loading user data...');
+      // Get user data from AsyncStorage
+      const userDataStr = await AsyncStorage.getItem('userData');
+      
+      if (userDataStr) {
+        const parsedUserData = JSON.parse(userDataStr);
+        console.log('User data loaded successfully');
+        setUserData(parsedUserData);
+      } else {
+        console.log('No user data found in AsyncStorage');
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      // Always set loading to false, even if there's an error
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.multiRemove(['userToken', 'userData']);
+      router.replace('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
 
   const handleNewClaim = () => {
     router.push('/claim/new');
   };
   
   const handleViewPolicies = () => {
-    router.push('/(app)/policy/index');
+    router.push('/policy');
   };
 
   const handleProfile = () => {
@@ -26,6 +66,14 @@ export default function HomeScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#8E1616" />
           <Text className="text-gray-600 mt-4">Loading your dashboard...</Text>
+          
+          {/* Debug button to bypass loading state */}
+          <TouchableOpacity 
+            onPress={() => setLoading(false)} 
+            className="mt-8 bg-gray-500 p-3 rounded-lg"
+          >
+            <Text className="text-white">Continue to Dashboard</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -39,7 +87,7 @@ export default function HomeScreen() {
           <View className="flex-row justify-between items-center mb-6">
             <View>
               <Text className="text-light text-lg">Welcome back,</Text>
-              <Text className="text-light text-2xl font-bold">{user?.full_name || 'User'}</Text>
+              <Text className="text-light text-2xl font-bold">{userData?.full_name || 'User'}</Text>
             </View>
             <TouchableOpacity onPress={handleProfile} className="bg-tertiary p-2 rounded-full">
               <Image
@@ -52,7 +100,7 @@ export default function HomeScreen() {
           
           <View className="bg-light p-4 rounded-xl">
             <Text className="text-primary font-bold mb-1">Policy Holder ID</Text>
-            <Text className="text-secondary text-lg">{user?.policyholder_id || 'Not available'}</Text>
+            <Text className="text-secondary text-lg">{userData?.policyholder_id || 'Not available'}</Text>
           </View>
         </View>
 
@@ -143,7 +191,7 @@ export default function HomeScreen() {
           </View>
           
           <TouchableOpacity
-            onPress={logout}
+            onPress={handleLogout}
             className="bg-tertiary/20 p-4 rounded-xl items-center"
           >
             <Text className="text-tertiary font-bold">Logout</Text>

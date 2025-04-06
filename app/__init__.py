@@ -55,9 +55,11 @@ def create_app():
     # Register blueprints
     from app.blueprints.whatsapp import whatsapp_bp
     from app.blueprints.car_damage import car_damage_bp
+    from app.blueprints.car_recognition import car_recognition_bp
     
     app.register_blueprint(whatsapp_bp, url_prefix='/api/whatsapp')
     app.register_blueprint(car_damage_bp, url_prefix='/api/car-damage')
+    app.register_blueprint(car_recognition_bp, url_prefix='/api/car-recognition')
     
     @app.route('/')
     def index():

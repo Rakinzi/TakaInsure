@@ -5,13 +5,21 @@ import tensorflow.compat.v1 as tf
 from PIL import Image, ImageOps
 import cv2
 import io
-import config
+import os
 
-model_file = config.model_file
-label_file = config.label_file
-input_layer = config.input_layer
-output_layer = config.output_layer
-classifier_input_size = config.classifier_input_size
+model_file = os.path.join("car_make/yolo-coco", "model-weights-spectrico-mmr-mobilenet-128x128-344FF72B.pb")
+label_file = os.path.join("car_make", "labels.txt")
+
+# Network configuration
+input_layer = "input_1"
+output_layer = "softmax/Softmax"
+classifier_input_size = (128, 128) 
+
+model_file = model_file
+label_file = label_file
+input_layer = input_layer
+output_layer = output_layer
+classifier_input_size = classifier_input_size
 
 def load_graph(model_file):
   graph = tf.Graph()

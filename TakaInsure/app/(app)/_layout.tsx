@@ -35,7 +35,7 @@ export default function AppLayout() {
         name="home"
         options={{
           title: 'TakaInsure',
-            headerShown: false,
+          headerShown: false,
         }}
       />
       <Stack.Screen
@@ -64,10 +64,28 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="policy/index"
+        options={{
+          title: 'My Policies',
+        }}
+      />
+      <Stack.Screen
+        name="policy/details"
+        options={{
+          title: 'Policy Details',
+        }}
+      />
+      <Stack.Screen
+        name="policy/blockchain-details"
+        options={{
+          title: 'Blockchain Details',
+        }}
+      />
+      <Stack.Screen
         name="profile"
         options={{
           title: 'My Profile',
-            headerShown: false,
+          headerShown: false,
         }}
       />
     </Stack>

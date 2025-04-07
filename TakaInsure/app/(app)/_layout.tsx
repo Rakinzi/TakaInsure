@@ -88,6 +88,13 @@ export default function AppLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="vehicle"
+        options={{
+          title: 'My Vehicles',
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

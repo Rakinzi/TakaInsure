@@ -143,6 +143,23 @@ export default function HomeScreen() {
           </TouchableOpacity>
           
           <TouchableOpacity 
+            onPress={() => router.push('/vehicle')}
+            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-green-500"
+          >
+            <View className="bg-green-100 p-4 rounded-lg mr-4">
+              <Image
+                source={require('../../assets/images/secured.png')}
+                className="w-8 h-8"
+                resizeMode="contain"
+              />
+            </View>
+            <View>
+              <Text className="text-primary text-lg font-bold">My Vehicles</Text>
+              <Text className="text-gray-500">Manage your registered vehicles</Text>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
             onPress={() => {}}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-primary"
           >

@@ -1,0 +1,199 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { getVehicleById } from '../../../services/vehicleService';
+import { VehicleInfo } from '../../../types/vehicle';
+
+export default function VehicleDetailsScreen() {
+  const router = useRouter();
+  const { vehicleId } = useLocalSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [vehicle, setVehicle] = useState<VehicleInfo | null>(null);
+
+  useEffect(() => {
+    if (vehicleId) {
+      loadVehicleDetails(vehicleId as string);
+    }
+  }, [vehicleId]);
+
+  const loadVehicleDetails = async (id: string) => {
+    try {
+      setLoading(true);
+      const vehicleData = await getVehicleById(id);
+      setVehicle(vehicleData);
+    } catch (error) {
+      console.error('Error loading vehicle details:', error);
+      Alert.alert(
+        'Error',
+        'Could not load vehicle details. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Unknown';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    } catch (e) {
+      return 'Invalid date';
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-light">
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#8E1616" />
+          <Text className="text-gray-600 mt-4">Loading vehicle details...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!vehicle) {
+    return (
+      <SafeAreaView className="flex-1 bg-light">
+        <View className="flex-1 justify-center items-center p-6">
+          <Text className="text-primary text-xl font-bold mb-2">Vehicle Not Found</Text>
+          <Text className="text-center text-gray-600 mb-6">
+            The vehicle you're looking for could not be found or may have been removed.
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.replace('/vehicle')}
+            className="bg-secondary px-6 py-3 rounded-xl"
+          >
+            <Text className="text-white font-bold">Go Back to Vehicles</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView className="flex-1 bg-light">
+      <ScrollView className="flex-1 p-6">
+        <Text className="text-primary text-2xl font-bold mb-2">Vehicle Details</Text>
+        <Text className="text-gray-600 mb-6">
+          View information about your registered vehicle
+        </Text>
+
+        {/* Vehicle Image */}
+        {vehicle.carImageUri ? (
+          <View className="mb-6">
+            <Image
+              source={{ uri: vehicle.carImageUri }}
+              className="w-full h-48 rounded-xl"
+              resizeMode="cover"
+            />
+          </View>
+        ) : (
+          <View className="w-full h-48 bg-gray-300 mb-6 rounded-xl items-center justify-center">
+            <Text className="text-gray-500">No vehicle image available</Text>
+          </View>
+        )}
+
+        {/* Vehicle Information Card */}
+        <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
+          <Text className="text-primary font-bold text-xl mb-4">
+            {vehicle.carMake} {vehicle.carModel} {vehicle.carYear && `(${vehicle.carYear})`}
+          </Text>
+          
+          <View className="flex-row justify-between mb-3">
+            <Text className="text-primary font-medium">License Plate</Text>
+            <Text className="text-secondary font-bold">{vehicle.plateNumber}</Text>
+          </View>
+          
+          <View className="flex-row justify-between mb-3">
+            <Text className="text-primary font-medium">Make</Text>
+            <Text className="text-gray-700">{vehicle.carMake}</Text>
+          </View>
+          
+          <View className="flex-row justify-between mb-3">
+            <Text className="text-primary font-medium">Model</Text>
+            <Text className="text-gray-700">{vehicle.carModel}</Text>
+          </View>
+          
+          {vehicle.carYear && (
+            <View className="flex-row justify-between mb-3">
+              <Text className="text-primary font-medium">Year</Text>
+              <Text className="text-gray-700">{vehicle.carYear}</Text>
+            </View>
+          )}
+          
+          <View className="flex-row justify-between">
+            <Text className="text-primary font-medium">Registration Date</Text>
+            <Text className="text-gray-700">{formatDate(vehicle.timestamp)}</Text>
+          </View>
+        </View>
+
+        {/* Blockchain Information */}
+        <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
+          <Text className="text-primary font-bold text-lg mb-3">Blockchain Verification</Text>
+          
+          {vehicle.blockchainReference ? (
+            <>
+              <View className="bg-green-100 px-3 py-2 rounded-lg mb-4">
+                <Text className="text-green-800">
+                  This vehicle's information is securely stored on the blockchain
+                </Text>
+              </View>
+              
+              <Text className="text-primary font-medium mb-1">Blockchain Reference</Text>
+              <Text className="text-gray-700 font-mono text-xs mb-3">{vehicle.blockchainReference}</Text>
+              
+              <TouchableOpacity 
+                className="bg-primary p-3 rounded-lg items-center"
+                onPress={() => Alert.alert(
+                  'Blockchain Verification',
+                  'This vehicle information is immutably stored on the blockchain, ensuring its authenticity and preventing unauthorized modifications.'
+                )}
+              >
+                <Text className="text-white font-medium">View Blockchain Details</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View className="bg-yellow-100 px-3 py-2 rounded-lg mb-3">
+              <Text className="text-yellow-800">
+                This vehicle is pending blockchain verification
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* License Plate Image */}
+        {vehicle.plateImageUri && (
+          <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
+            <Text className="text-primary font-bold text-lg mb-3">License Plate Image</Text>
+            <Image
+              source={{ uri: vehicle.plateImageUri }}
+              className="w-full h-32 rounded-lg"
+              resizeMode="cover"
+            />
+          </View>
+        )}
+
+        {/* Action Buttons */}
+        <View className="flex-row space-x-4 mb-6">
+          <TouchableOpacity
+            onPress={() => router.push('/policy/new')}
+            className="bg-secondary flex-1 p-4 rounded-xl items-center"
+          >
+            <Text className="text-white font-bold">Get Insurance</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="bg-primary flex-1 p-4 rounded-xl items-center"
+          >
+            <Text className="text-white font-bold">Back</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}

@@ -109,8 +109,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       carMake,
       carModel,
       carYear: carYear || undefined,
-      carImageUri: carImage,
-      plateImageUri: plateImage,
+      carImageUri: carImage ?? undefined,
+      plateImageUri: plateImage ?? undefined,
     };
     
     try {

@@ -1,9 +1,12 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Use environment variable if available, otherwise use localhost for development
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 // Create an axios instance with default configuration
 const api = axios.create({
-  baseURL: 'https://takainsure.app/api',
+  baseURL: API_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

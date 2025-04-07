@@ -180,7 +180,7 @@ export default function VehicleDetailsScreen() {
         {/* Action Buttons */}
         <View className="flex-row space-x-4 mb-6">
           <TouchableOpacity
-            onPress={() => router.push('/policy/new')}
+            onPress={() => router.push('/policy')}
             className="bg-secondary flex-1 p-4 rounded-xl items-center"
           >
             <Text className="text-white font-bold">Get Insurance</Text>

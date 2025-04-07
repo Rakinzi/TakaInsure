@@ -2,7 +2,7 @@ import { VehicleInfo, VehicleDetectionResult, PlateDetectionResult } from '../ty
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://takainsure.app/api';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 /**
  * Creates a form data object from an image URI

@@ -1,562 +1,262 @@
-import { ethers } from 'ethers';
+import { VehicleInfo, VehicleDetectionResult, PlateDetectionResult } from '../types/vehicle';
+import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Contract ABI (Application Binary Interface)
-// This would be generated when you compile your Solidity contract
-// This is a simplified version for demonstration purposes
-const CONTRACT_ABI = [
-  // Policy functions
-  "function createPolicy(address payable _policyholder, string memory _policyHolderId, uint8 _packageType, uint256 _coverageAmount, uint256 _premium, uint256 _durationDays, string memory _metadataURI) public returns (uint256)",
-  "function payPremium(uint256 _policyId) public payable",
-  "function cancelPolicy(uint256 _policyId) public",
-  "function getPolicyDetails(uint256 _policyId) public view returns (tuple(uint256 id, address policyholder, string policyHolderId, uint8 packageType, uint256 coverageAmount, uint256 premium, uint256 startDate, uint256 endDate, uint8 status, string metadataURI))",
-  "function getPolicyholderPolicies(address _policyholder) public view returns (uint256[] memory)",
-  
-  // Claim functions
-  "function fileClaim(uint256 _policyId, string memory _claimType, string memory _incidentDescription, uint256 _claimAmount, string memory _evidenceURI) public returns (uint256)",
-  "function updateClaimWithAIAssessment(uint256 _claimId, uint8 _status, string memory _aiAssessmentResult) public",
-  "function payClaim(uint256 _claimId) public payable",
-  "function getClaimDetails(uint256 _claimId) public view returns (tuple(uint256 id, uint256 policyId, address claimant, string claimType, string incidentDescription, uint256 claimAmount, uint256 filingDate, uint8 status, string evidenceURI, string aiAssessmentResult))",
-  "function getPolicyholderClaims(address _policyholder) public view returns (uint256[] memory)",
-  
-  // Events
-  "event PolicyCreated(uint256 indexed policyId, address indexed policyholder, uint256 coverageAmount)",
-  "event PolicyUpdated(uint256 indexed policyId, uint8 status)",
-  "event PremiumPaid(uint256 indexed policyId, address indexed policyholder, uint256 amount)",
-  "event ClaimFiled(uint256 indexed claimId, uint256 indexed policyId, address indexed claimant, uint256 amount)",
-  "event ClaimStatusUpdated(uint256 indexed claimId, uint8 status)",
-  "event ClaimPaid(uint256 indexed claimId, address indexed claimant, uint256 amount)"
-];
+// Use environment variable if available, otherwise use localhost for development
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-// Package types mapping
-const PackageType = {
-  Basic: 0,
-  Standard: 1,
-  Premium: 2
+/**
+ * Creates a form data object from an image URI
+ */
+const createImageFormData = (imageUri: string, fieldName: string = 'file') => {
+  const formData = new FormData();
+  const filename = imageUri.split('/').pop() || 'image.jpg';
+  const match = /\.(\w+)$/.exec(filename);
+  const type = match ? `image/${match[1]}` : 'image/jpeg';
+  
+  formData.append(fieldName, {
+    uri: imageUri,
+    name: filename,
+    type,
+  } as any);
+  
+  return formData;
 };
 
-// Claim status mapping
-const ClaimStatus = {
-  Pending: 0,
-  UnderReview: 1,
-  Approved: 2,
-  Rejected: 3,
-  Paid: 4
+/**
+ * Get authentication header with the user token
+ */
+const getAuthHeader = async () => {
+  const userToken = await AsyncStorage.getItem('userToken');
+  return {
+    Authorization: `Bearer ${userToken}`,
+  };
 };
 
-// Policy status mapping
-const PolicyStatus = {
-  Active: 0,
-  Expired: 1,
-  Cancelled: 2
+/**
+ * Service to detect license plate from image
+ */
+export const detectLicensePlate = async (imageUri: string): Promise<PlateDetectionResult | null> => {
+  try {
+    const formData = createImageFormData(imageUri);
+    
+    const response = await axios.post(
+      `${API_URL}/license-plate/detect`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    
+    if (response.data && response.data.result) {
+      return {
+        plateNumber: response.data.result,
+        confidence: response.data.confidence || 0.8,
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('License plate detection error:', error);
+    throw error;
+  }
 };
 
-// Define event types for better TypeScript support
-interface BlockchainEvent {
-  blockNumber: number;
-  transactionIndex: number;
-  transactionHash: string;
-  event: string;
-  args: Record<string, any>;
-}
-
-// Define type for the log structure from ethers
-interface LogDescription {
-  name: string;
-  args: Record<string, any>;
-}
-
-// Define type for ethereum logs
-interface Log {
-  blockNumber: number;
-  blockHash: string;
-  transactionIndex: number;
-  removed: boolean;
-  address: string;
-  data: string;
-  topics: string[];
-  transactionHash: string;
-  logIndex: number;
-}
-
-class BlockchainService {
-  private provider: ethers.JsonRpcProvider | null = null;
-  private wallet: ethers.Wallet | null = null;
-  private contract: ethers.Contract | null = null;
-  private contractAddress: string = '';
-  private isInitialized: boolean = false;
-  
-  // Initialize the blockchain service
-  async initialize(rpcUrl: string, contractAddress: string): Promise<boolean> {
-    try {
-      console.log('Initializing blockchain service...');
-      
-      // Setup provider (for reading blockchain data)
-      this.provider = new ethers.JsonRpcProvider(rpcUrl);
-      this.contractAddress = contractAddress;
-      
-      // Setup contract interface (for reading only at this point)
-      this.contract = new ethers.Contract(
-        contractAddress,
-        CONTRACT_ABI,
-        this.provider
-      );
-      
-      // Check if contract is accessible
-      await this.contract.policyCounter();
-      
-      this.isInitialized = true;
-      console.log('Blockchain service initialized successfully');
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize blockchain service:', error);
-      return false;
-    }
-  }
-  
-  // Setup wallet for signing transactions
-  async setupWallet(privateKey: string): Promise<boolean> {
-    try {
-      if (!this.provider || !this.isInitialized) {
-        throw new Error('Blockchain service not initialized');
+/**
+ * Service to detect car make and model from image
+ */
+export const detectCarMakeModel = async (imageUri: string): Promise<VehicleDetectionResult | null> => {
+  try {
+    const formData = createImageFormData(imageUri);
+    
+    const response = await axios.post(
+      `${API_URL}/car-recognition/detect`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       }
+    );
+    
+    if (response.data && response.data.results && response.data.results.length > 0) {
+      const carResult = response.data.results.find((r: any) => 
+        r.class === 'car' && r.predictions && r.predictions.length > 0);
       
-      // Create wallet with private key
-      this.wallet = new ethers.Wallet(privateKey, this.provider);
-      
-      // Connect contract to wallet for signing transactions
-      this.contract = new ethers.Contract(
-        this.contractAddress,
-        CONTRACT_ABI,
-        this.wallet
-      );
-      
-      console.log('Wallet setup successful');
-      return true;
-    } catch (error) {
-      console.error('Failed to setup wallet:', error);
-      return false;
-    }
-  }
-  
-  // Create a new policy on the blockchain
-  async createPolicy(
-    policyholderAddress: string, 
-    policyHolderId: string,
-    packageType: 'Basic' | 'Standard' | 'Premium',
-    coverageAmount: number,
-    premium: number,
-    durationDays: number,
-    metadataURI: string
-  ): Promise<{ success: boolean; policyId?: string; transactionHash?: string; error?: string }> {
-    try {
-      if (!this.contract || !this.wallet) {
-        throw new Error('Blockchain service not fully initialized');
-      }
-      
-      console.log(`Creating policy for policyholder: ${policyholderAddress}`);
-      
-      // Convert coverage and premium to wei (assuming they're provided in ETH)
-      const coverageAmountWei = ethers.parseEther(coverageAmount.toString());
-      const premiumWei = ethers.parseEther(premium.toString());
-      
-      // Call contract method
-      const tx = await this.contract.createPolicy(
-        policyholderAddress,
-        policyHolderId,
-        PackageType[packageType],
-        coverageAmountWei,
-        premiumWei,
-        durationDays,
-        metadataURI
-      );
-      
-      // Wait for transaction to be mined
-      const receipt = await tx.wait();
-      
-      if (!receipt) {
-        throw new Error('Transaction receipt not available');
-      }
-      
-      // Find the PolicyCreated event to get the policy ID
-      const events = receipt.logs.map((log: Log) => {
-        try {
-          return this.contract?.interface.parseLog({
-            topics: log.topics as string[],
-            data: log.data
-          });
-        } catch (e: unknown) {
-          return null;
-        }
-      }).filter(Boolean);
-      
-      const event = events.find((e:any) => e?.name === 'PolicyCreated');
-      const policyId = event?.args[0].toString();
-      
-      console.log(`Policy created with ID: ${policyId}`);
-      
-      return {
-        success: true,
-        policyId,
-        transactionHash: receipt.hash
-      };
-    } catch (error: any) {
-      console.error('Failed to create policy:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-  
-  // File a claim on the blockchain
-  async fileClaim(
-    policyId: string,
-    claimType: string,
-    incidentDescription: string,
-    claimAmount: number,
-    evidenceURI: string
-  ): Promise<{ success: boolean; claimId?: string; transactionHash?: string; error?: string }> {
-    try {
-      if (!this.contract || !this.wallet) {
-        throw new Error('Blockchain service not fully initialized');
-      }
-      
-      console.log(`Filing claim for policy ID: ${policyId}`);
-      
-      // Convert claim amount to wei (assuming it's provided in ETH)
-      const claimAmountWei = ethers.parseEther(claimAmount.toString());
-      
-      // Call contract method
-      const tx = await this.contract.fileClaim(
-        policyId,
-        claimType,
-        incidentDescription,
-        claimAmountWei,
-        evidenceURI
-      );
-      
-      // Wait for transaction to be mined
-      const receipt = await tx.wait();
-      
-      if (!receipt) {
-        throw new Error('Transaction receipt not available');
-      }
-      
-      // Find the ClaimFiled event to get the claim ID
-      const events = receipt.logs.map((log: Log) => {
-        try {
-          return this.contract?.interface.parseLog({
-            topics: log.topics as string[],
-            data: log.data
-          });
-        } catch (e: unknown) {
-          return null;
-        }
-      }).filter(Boolean);
-      
-      const event = events.find((e:any) => e?.name === 'ClaimFiled');
-      const claimId = event?.args[0].toString();
-      
-      console.log(`Claim filed with ID: ${claimId}`);
-      
-      return {
-        success: true,
-        claimId,
-        transactionHash: receipt.hash
-      };
-    } catch (error: any) {
-      console.error('Failed to file claim:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-  
-  // Update claim with AI assessment
-  async updateClaimWithAIAssessment(
-    claimId: string,
-    status: 'Pending' | 'UnderReview' | 'Approved' | 'Rejected' | 'Paid',
-    aiAssessmentResult: string
-  ): Promise<{ success: boolean; transactionHash?: string; error?: string }> {
-    try {
-      if (!this.contract || !this.wallet) {
-        throw new Error('Blockchain service not fully initialized');
-      }
-      
-      console.log(`Updating claim ${claimId} with AI assessment`);
-      
-      // Call contract method
-      const tx = await this.contract.updateClaimWithAIAssessment(
-        claimId,
-        ClaimStatus[status],
-        aiAssessmentResult
-      );
-      
-      // Wait for transaction to be mined
-      const receipt = await tx.wait();
-      
-      if (!receipt) {
-        throw new Error('Transaction receipt not available');
-      }
-      
-      console.log(`Claim ${claimId} updated with AI assessment`);
-      
-      return {
-        success: true,
-        transactionHash: receipt.hash
-      };
-    } catch (error: any) {
-      console.error('Failed to update claim with AI assessment:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-  
-  // Pay a claim
-  async payClaim(
-    claimId: string,
-    amount: number
-  ): Promise<{ success: boolean; transactionHash?: string; error?: string }> {
-    try {
-      if (!this.contract || !this.wallet) {
-        throw new Error('Blockchain service not fully initialized');
-      }
-      
-      console.log(`Paying claim ${claimId}`);
-      
-      // Convert amount to wei (assuming it's provided in ETH)
-      const amountWei = ethers.parseEther(amount.toString());
-      
-      // Call contract method
-      const tx = await this.contract.payClaim(claimId, {
-        value: amountWei
-      });
-      
-      // Wait for transaction to be mined
-      const receipt = await tx.wait();
-      
-      if (!receipt) {
-        throw new Error('Transaction receipt not available');
-      }
-      
-      console.log(`Claim ${claimId} paid`);
-      
-      return {
-        success: true,
-        transactionHash: receipt.hash
-      };
-    } catch (error: any) {
-      console.error('Failed to pay claim:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-  
-  // Get policy details
-  async getPolicyDetails(policyId: string): Promise<any> {
-    try {
-      if (!this.contract) {
-        throw new Error('Blockchain service not initialized');
-      }
-      
-      const policy = await this.contract.getPolicyDetails(policyId);
-      
-      // Format the policy data
-      const formattedPolicy = {
-        id: policy[0].toString(),
-        policyholder: policy[1],
-        policyHolderId: policy[2],
-        packageType: Object.keys(PackageType)[policy[3]],
-        coverageAmount: ethers.formatEther(policy[4]),
-        premium: ethers.formatEther(policy[5]),
-        startDate: new Date(Number(policy[6]) * 1000).toISOString(),
-        endDate: new Date(Number(policy[7]) * 1000).toISOString(),
-        status: Object.keys(PolicyStatus)[policy[8]],
-        metadataURI: policy[9]
-      };
-      
-      return formattedPolicy;
-    } catch (error) {
-      console.error('Failed to get policy details:', error);
-      throw error;
-    }
-  }
-  
-  // Get claim details
-  async getClaimDetails(claimId: string): Promise<any> {
-    try {
-      if (!this.contract) {
-        throw new Error('Blockchain service not initialized');
-      }
-      
-      const claim = await this.contract.getClaimDetails(claimId);
-      
-      // Format the claim data
-      const formattedClaim = {
-        id: claim[0].toString(),
-        policyId: claim[1].toString(),
-        claimant: claim[2],
-        claimType: claim[3],
-        incidentDescription: claim[4],
-        claimAmount: ethers.formatEther(claim[5]),
-        filingDate: new Date(Number(claim[6]) * 1000).toISOString(),
-        status: Object.keys(ClaimStatus)[claim[7]],
-        evidenceURI: claim[8],
-        aiAssessmentResult: claim[9]
-      };
-      
-      return formattedClaim;
-    } catch (error) {
-      console.error('Failed to get claim details:', error);
-      throw error;
-    }
-  }
-  
-  // Get all policies for a policyholder
-  async getPolicyholderPolicies(policyholderAddress: string): Promise<string[]> {
-    try {
-      if (!this.contract) {
-        throw new Error('Blockchain service not initialized');
-      }
-      
-      const policyIds = await this.contract.getPolicyholderPolicies(policyholderAddress);
-      return policyIds.map((id: bigint) => id.toString());
-    } catch (error) {
-      console.error('Failed to get policyholder policies:', error);
-      throw error;
-    }
-  }
-  
-  // Get all claims for a policyholder
-  async getPolicyholderClaims(policyholderAddress: string): Promise<string[]> {
-    try {
-      if (!this.contract) {
-        throw new Error('Blockchain service not initialized');
-      }
-      
-      const claimIds = await this.contract.getPolicyholderClaims(policyholderAddress);
-      return claimIds.map((id: bigint) => id.toString());
-    } catch (error) {
-      console.error('Failed to get policyholder claims:', error);
-      throw error;
-    }
-  }
-  
-  // Get blockchain transaction history for a policy or claim
-  async getTransactionHistory(id: string, type: 'policy' | 'claim'): Promise<any[]> {
-    try {
-      if (!this.contract || !this.provider) {
-        throw new Error('Blockchain service not initialized');
-      }
-      
-      // For ethers v6, we need to use a different approach for event filtering
-      const eventNames: string[] = [];
-      if (type === 'policy') {
-        eventNames.push('PolicyCreated', 'PolicyUpdated', 'PremiumPaid');
-      } else {
-        eventNames.push('ClaimFiled', 'ClaimStatusUpdated', 'ClaimPaid');
-      }
-      
-      // Fetch blocks for the past month (adjust as needed)
-      const currentBlock = await this.provider.getBlockNumber();
-      const startBlock = Math.max(0, currentBlock - 1000000); // Roughly a month of blocks
-      
-      // Store all events
-      const allEvents: any[] = [];
-      
-      // Create filter for the contract address
-      const filter = {
-        address: this.contractAddress,
-        fromBlock: startBlock,
-        toBlock: 'latest'
-      };
-      
-      // Get all logs for the contract
-      const logs = await this.provider.getLogs(filter);
-      
-      // Parse the logs into events if they match our event names
-      for (const log of logs) {
-        try {
-          const parsedLog = this.contract?.interface.parseLog({
-            topics: log.topics as string[],
-            data: log.data
-          });
-          
-          if (parsedLog && eventNames.includes(parsedLog.name)) {
-            // Check if this event is related to our specific ID
-            // The ID is typically the first indexed parameter (args[0])
-            if (parsedLog.args[0].toString() === id) {
-              allEvents.push({
-                ...log,
-                event: parsedLog.name,
-                args: parsedLog.args
-              });
-            }
-          }
-        } catch (e: unknown) {
-          console.error('Error parsing log:', e);
-        }
-      }
-      
-      // Sort events by block number and transaction index
-      allEvents.sort((a, b) => {
-        if (a.blockNumber !== b.blockNumber) {
-          return a.blockNumber - b.blockNumber;
-        }
-        return a.transactionIndex - b.transactionIndex;
-      });
-      
-      // Format the events
-      const formattedEvents = await Promise.all(allEvents.map(async (event) => {
-        const block = await this.provider!.getBlock(event.blockNumber);
+      if (carResult && carResult.predictions[0]) {
+        const prediction = carResult.predictions[0];
+        
+        // Extract year if present in the model string
+        const yearMatch = prediction.model.match(/\b(19|20)\d{2}\b/);
+        const year = yearMatch ? yearMatch[0] : undefined;
         
         return {
-          transactionHash: event.transactionHash,
-          blockNumber: event.blockNumber,
-          timestamp: block?.timestamp ? new Date(Number(block.timestamp) * 1000).toISOString() : new Date().toISOString(),
-          eventName: event.event,
-          data: event.args
+          make: prediction.make,
+          model: prediction.model,
+          year,
+          confidence: parseFloat(prediction.prob),
         };
-      }));
-      
-      return formattedEvents;
-    } catch (error) {
-      console.error('Failed to get transaction history:', error);
-      throw error;
+      }
     }
-  }
-  
-  // Helper method to create a mock blockchain transaction for demo purposes
-  async createMockTransaction(type: string): Promise<{
-    success: boolean;
-    transactionHash: string;
-    blockNumber: number;
-    timestamp: string;
-  }> {
-    // Simulate a delay to mimic blockchain confirmation time
-    await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Generate mock transaction hash
-    const transactionHash = '0x' + Math.random().toString(16).substring(2, 42);
-    
-    return {
-      success: true,
-      transactionHash,
-      blockNumber: Math.floor(Math.random() * 1000000) + 10000000,
-      timestamp: new Date().toISOString(),
-    };
+    return null;
+  } catch (error) {
+    console.error('Car make/model detection error:', error);
+    throw error;
   }
-}
+};
 
-export const blockchainService = new BlockchainService();
+/**
+ * Service to register a vehicle
+ */
+export const registerVehicle = async (vehicleInfo: VehicleInfo): Promise<string> => {
+  try {
+    const formData = new FormData();
+    
+    // Add vehicle details
+    formData.append('plate_number', vehicleInfo.plateNumber);
+    formData.append('car_make', vehicleInfo.carMake);
+    formData.append('car_model', vehicleInfo.carModel);
+    if (vehicleInfo.carYear) formData.append('car_year', vehicleInfo.carYear);
+    
+    // Add car image if exists
+    if (vehicleInfo.carImageUri) {
+      const carFilename = vehicleInfo.carImageUri.split('/').pop() || 'car.jpg';
+      const carMatch = /\.(\w+)$/.exec(carFilename);
+      const carType = carMatch ? `image/${carMatch[1]}` : 'image/jpeg';
+      
+      formData.append('car_image', {
+        uri: vehicleInfo.carImageUri,
+        name: carFilename,
+        type: carType,
+      } as any);
+    }
+    
+    // Add plate image if exists
+    if (vehicleInfo.plateImageUri) {
+      const plateFilename = vehicleInfo.plateImageUri.split('/').pop() || 'plate.jpg';
+      const plateMatch = /\.(\w+)$/.exec(plateFilename);
+      const plateType = plateMatch ? `image/${plateMatch[1]}` : 'image/jpeg';
+      
+      formData.append('plate_image', {
+        uri: vehicleInfo.plateImageUri,
+        name: plateFilename,
+        type: plateType,
+      } as any);
+    }
+    
+    const headers = await getAuthHeader();
+    
+    const response = await axios.post(
+      `${API_URL}/vehicle/register`,
+      formData,
+      {
+        headers: {
+          ...headers,
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    
+    if (response.data && response.data.success) {
+      // Save the vehicle info locally
+      const vehicleId = response.data.vehicleId;
+      
+      // Update the vehicle info with blockchain reference and ID
+      const updatedVehicleInfo = {
+        ...vehicleInfo,
+        id: vehicleId,
+        blockchainReference: response.data.blockchainReference,
+        timestamp: new Date().toISOString(),
+      };
+      
+      // Get existing vehicles or initialize new array
+      const existingVehiclesJson = await AsyncStorage.getItem('userVehicles');
+      const existingVehicles = existingVehiclesJson ? JSON.parse(existingVehiclesJson) : [];
+      
+      // Add the new vehicle
+      existingVehicles.push(updatedVehicleInfo);
+      
+      // Save updated list
+      await AsyncStorage.setItem('userVehicles', JSON.stringify(existingVehicles));
+      
+      return vehicleId;
+    } else {
+      throw new Error(response.data.error || 'Failed to register vehicle');
+    }
+  } catch (error) {
+    console.error('Vehicle registration error:', error);
+    throw error;
+  }
+};
 
-// Export types and enums for use in the app
-export { PackageType, ClaimStatus, PolicyStatus };
+/**
+ * Service to get all user vehicles
+ */
+export const getUserVehicles = async (): Promise<VehicleInfo[]> => {
+  try {
+    // First try to get from local storage for faster response
+    const localVehiclesJson = await AsyncStorage.getItem('userVehicles');
+    const localVehicles = localVehiclesJson ? JSON.parse(localVehiclesJson) : [];
+    
+    // Then fetch from API to ensure we have the latest data
+    const headers = await getAuthHeader();
+    
+    try {
+      const response = await axios.get(
+        `${API_URL}/vehicle/list`,
+        { headers }
+      );
+      
+      if (response.data && response.data.vehicles) {
+        // Update local storage with latest data
+        await AsyncStorage.setItem('userVehicles', JSON.stringify(response.data.vehicles));
+        return response.data.vehicles;
+      }
+    } catch (apiError) {
+      console.warn('Failed to fetch vehicles from API, using local data:', apiError);
+      // If API fails, return local data
+      return localVehicles;
+    }
+    
+    return localVehicles;
+  } catch (error) {
+    console.error('Get user vehicles error:', error);
+    throw error;
+  }
+};
 
-export default blockchainService;
+/**
+ * Service to get a specific vehicle by ID
+ */
+export const getVehicleById = async (vehicleId: string): Promise<VehicleInfo | null> => {
+  try {
+    // First check local storage
+    const vehiclesJson = await AsyncStorage.getItem('userVehicles');
+    const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];
+    
+    const localVehicle = vehicles.find((v: VehicleInfo) => v.id === vehicleId);
+    
+    // If found locally, return it
+    if (localVehicle) return localVehicle;
+    
+    // Otherwise fetch from API
+    const headers = await getAuthHeader();
+    
+    const response = await axios.get(
+      `${API_URL}/vehicle/${vehicleId}`,
+      { headers }
+    );
+    
+    if (response.data && response.data.vehicle) {
+      return response.data.vehicle;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`Get vehicle ${vehicleId} error:`, error);
+    throw error;
+  }
+};

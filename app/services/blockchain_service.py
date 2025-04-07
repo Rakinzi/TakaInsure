@@ -4,7 +4,7 @@ import logging
 import hashlib
 import time
 from web3 import Web3
-from web3.middleware import geth_poa_middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from eth_account import Account
 from dotenv import load_dotenv
 
@@ -46,7 +46,7 @@ CONTRACT_ABI = [
 # Initialize web3 connection
 try:
     web3 = Web3(Web3.HTTPProvider(BLOCKCHAIN_PROVIDER_URL))
-    web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
     logger.info(f"Connected to blockchain: {web3.is_connected()}")
     
     # Get contract instance

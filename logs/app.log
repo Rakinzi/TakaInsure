@@ -663,3 +663,282 @@ werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on 
 2025-04-07 15:31:56 [INFO] __init__ - create_app: Application initialized successfully
 2025-04-07 15:31:56 [INFO] app - <module>: Starting application on port 5000 with debug=True
 2025-04-07 15:31:56 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-07 19:02:20 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:02:20 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:02:20 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:02:30 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-07 19:02:32 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:02:32 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:02:32 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:02:32 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:02:37 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 19:02:38 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-07 19:02:38 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:02:38 [DEBUG] __init__ - <module>: interactive is False
+2025-04-07 19:02:38 [DEBUG] __init__ - <module>: platform is win32
+2025-04-07 19:02:38 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:02:38 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-07 19:02:43 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 19:02:43 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 19:02:45 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-07 19:02:46 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-07 19:02:46 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-07 19:02:46 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-07 19:02:46 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-07 19:02:49 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 19:19:49 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:19:49 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:19:49 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:21:25 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:21:25 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:21:25 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:21:26 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 19:21:26 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 19:22:02 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:22:02 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:22:02 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:22:03 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 19:22:03 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 19:22:04 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 19:22:04 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 19:27:38 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:27:38 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:27:38 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:27:39 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 19:27:39 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 19:27:39 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 19:27:40 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 19:27:41 [DEBUG] rpc - make_request: Making request HTTP. URI: http://localhost:8545, Method: web3_clientVersion
+2025-04-07 19:27:41 [DEBUG] http_session_manager - cache_and_return_session: Session cached: http://localhost:8545, <requests.sessions.Session object at 0x0000026FF8707620>
+2025-04-07 19:27:41 [DEBUG] connectionpool - _new_conn: Starting new HTTP connection (1): localhost:8545
+2025-04-07 19:27:46 [INFO] blockchain_service - <module>: Connected to blockchain: False
+2025-04-07 19:27:46 [WARNING] blockchain_service - <module>: Contract address not set - blockchain operations will be simulated
+2025-04-07 19:27:46 [WARNING] blockchain_service - <module>: Private key not set - blockchain operations will be simulated
+2025-04-07 19:30:03 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:30:03 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:30:03 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:30:04 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 19:30:04 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 19:30:04 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 19:30:05 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 19:30:06 [DEBUG] rpc - make_request: Making request HTTP. URI: http://localhost:8545, Method: web3_clientVersion
+2025-04-07 19:30:06 [DEBUG] http_session_manager - cache_and_return_session: Session cached: http://localhost:8545, <requests.sessions.Session object at 0x000001BCE8BDB3E0>
+2025-04-07 19:30:06 [DEBUG] connectionpool - _new_conn: Starting new HTTP connection (1): localhost:8545
+2025-04-07 19:30:10 [INFO] blockchain_service - <module>: Connected to blockchain: False
+2025-04-07 19:30:10 [WARNING] blockchain_service - <module>: Contract address not set - blockchain operations will be simulated
+2025-04-07 19:30:10 [WARNING] blockchain_service - <module>: Private key not set - blockchain operations will be simulated
+2025-04-07 19:30:13 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-07 19:30:14 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:30:14 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:30:14 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:30:14 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:30:16 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-07 19:30:16 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:30:16 [DEBUG] __init__ - <module>: interactive is False
+2025-04-07 19:30:16 [DEBUG] __init__ - <module>: platform is win32
+2025-04-07 19:30:16 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:30:16 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-07 19:30:19 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\car_make\classifier.py:26: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-07 19:30:19 [ERROR] image_processing - <module>: Failed to initialize car make classifier: [Errno 2] No such file or directory: 'car_make/yolo-coco\\model-weights-spectrico-mmr-mobilenet-128x128-344FF72B.pb'
+2025-04-07 19:30:20 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-07 19:30:20 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-07 19:30:20 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-07 19:30:22 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:30:22 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:30:22 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:30:23 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 19:30:23 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 19:30:23 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 19:30:24 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 19:30:25 [DEBUG] rpc - make_request: Making request HTTP. URI: http://localhost:8545, Method: web3_clientVersion
+2025-04-07 19:30:25 [DEBUG] http_session_manager - cache_and_return_session: Session cached: http://localhost:8545, <requests.sessions.Session object at 0x000001A739E00590>
+2025-04-07 19:30:25 [DEBUG] connectionpool - _new_conn: Starting new HTTP connection (1): localhost:8545
+2025-04-07 19:30:29 [INFO] blockchain_service - <module>: Connected to blockchain: False
+2025-04-07 19:30:29 [WARNING] blockchain_service - <module>: Contract address not set - blockchain operations will be simulated
+2025-04-07 19:30:29 [WARNING] blockchain_service - <module>: Private key not set - blockchain operations will be simulated
+2025-04-07 19:30:32 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-07 19:30:32 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:30:32 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:30:32 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:30:32 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:30:34 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-07 19:30:34 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:30:34 [DEBUG] __init__ - <module>: interactive is False
+2025-04-07 19:30:34 [DEBUG] __init__ - <module>: platform is win32
+2025-04-07 19:30:34 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:30:34 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-07 19:30:37 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\car_make\classifier.py:26: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-07 19:30:37 [ERROR] image_processing - <module>: Failed to initialize car make classifier: [Errno 2] No such file or directory: 'car_make/yolo-coco\\model-weights-spectrico-mmr-mobilenet-128x128-344FF72B.pb'
+2025-04-07 19:30:37 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-07 19:30:37 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-07 19:30:37 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-07 19:30:37 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-07 19:36:54 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:36:54 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:36:54 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:36:55 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 19:36:55 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 19:36:56 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 19:36:57 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 19:36:58 [DEBUG] rpc - make_request: Making request HTTP. URI: http://localhost:8545, Method: web3_clientVersion
+2025-04-07 19:36:58 [DEBUG] http_session_manager - cache_and_return_session: Session cached: http://localhost:8545, <requests.sessions.Session object at 0x0000022124C359A0>
+2025-04-07 19:36:58 [DEBUG] connectionpool - _new_conn: Starting new HTTP connection (1): localhost:8545
+2025-04-07 19:37:02 [INFO] blockchain_service - <module>: Connected to blockchain: False
+2025-04-07 19:37:02 [WARNING] blockchain_service - <module>: Contract address not set - blockchain operations will be simulated
+2025-04-07 19:37:02 [WARNING] blockchain_service - <module>: Private key not set - blockchain operations will be simulated
+2025-04-07 19:37:06 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-07 19:37:07 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:37:07 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:37:07 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:37:07 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:37:09 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-07 19:37:09 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:37:09 [DEBUG] __init__ - <module>: interactive is False
+2025-04-07 19:37:09 [DEBUG] __init__ - <module>: platform is win32
+2025-04-07 19:37:09 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:37:09 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-07 19:37:13 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\car_make\classifier.py:26: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-07 19:37:13 [ERROR] image_processing - <module>: Failed to initialize car make classifier: [Errno 2] No such file or directory: 'car_make/yolo-coco\\model-weights-spectrico-mmr-mobilenet-128x128-344FF72B.pb'
+2025-04-07 19:37:14 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-07 19:37:14 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-07 19:37:14 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-07 19:37:14 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-07 19:37:35 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:37:35 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:37:35 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:37:39 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-07 19:37:39 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:37:39 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:37:39 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:37:39 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:37:41 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 19:37:42 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-07 19:37:42 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:37:42 [DEBUG] __init__ - <module>: interactive is False
+2025-04-07 19:37:42 [DEBUG] __init__ - <module>: platform is win32
+2025-04-07 19:37:42 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:37:42 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-07 19:37:46 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 19:37:46 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 19:37:46 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 19:37:47 [DEBUG] rpc - make_request: Making request HTTP. URI: http://localhost:8545, Method: web3_clientVersion
+2025-04-07 19:37:47 [DEBUG] http_session_manager - cache_and_return_session: Session cached: http://localhost:8545, <requests.sessions.Session object at 0x000002AC3BFF6060>
+2025-04-07 19:37:47 [DEBUG] connectionpool - _new_conn: Starting new HTTP connection (1): localhost:8545
+2025-04-07 19:37:51 [INFO] blockchain_service - <module>: Connected to blockchain: False
+2025-04-07 19:37:51 [WARNING] blockchain_service - <module>: Contract address not set - blockchain operations will be simulated
+2025-04-07 19:37:51 [WARNING] blockchain_service - <module>: Private key not set - blockchain operations will be simulated
+2025-04-07 19:37:52 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\car_make\classifier.py:26: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-07 19:37:52 [ERROR] image_processing - <module>: Failed to initialize car make classifier: [Errno 2] No such file or directory: 'car_make/yolo-coco\\model-weights-spectrico-mmr-mobilenet-128x128-344FF72B.pb'
+2025-04-07 19:37:53 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-07 19:37:53 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-07 19:37:53 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-07 19:37:53 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-07 19:39:15 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 19:39:15 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 19:39:15 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 19:39:18 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-07 19:39:19 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:39:19 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:39:19 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 19:39:19 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 19:39:21 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 19:39:21 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-07 19:39:21 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:39:21 [DEBUG] __init__ - <module>: interactive is False
+2025-04-07 19:39:21 [DEBUG] __init__ - <module>: platform is win32
+2025-04-07 19:39:21 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-07 19:39:21 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-07 19:39:23 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 19:39:23 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 19:39:25 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-07 19:39:25 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-07 19:39:25 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-07 19:39:25 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-07 19:39:26 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-07 19:39:26 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 19:39:27 [DEBUG] rpc - make_request: Making request HTTP. URI: http://localhost:8545, Method: web3_clientVersion
+2025-04-07 19:39:27 [DEBUG] http_session_manager - cache_and_return_session: Session cached: http://localhost:8545, <requests.sessions.Session object at 0x0000016919734230>
+2025-04-07 19:39:27 [DEBUG] connectionpool - _new_conn: Starting new HTTP connection (1): localhost:8545
+2025-04-07 19:39:31 [INFO] blockchain_service - <module>: Connected to blockchain: False
+2025-04-07 19:39:31 [WARNING] blockchain_service - <module>: Contract address not set - blockchain operations will be simulated
+2025-04-07 19:39:31 [WARNING] blockchain_service - <module>: Private key not set - blockchain operations will be simulated
+2025-04-07 19:39:31 [ERROR] image_processing - <module>: Failed to initialize car make classifier: [Errno 2] No such file or directory: 'car_make/yolo-coco\\model-weights-spectrico-mmr-mobilenet-128x128-344FF72B.pb'
+2025-04-07 19:39:32 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-07 19:39:32 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-07 19:39:32 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-07 19:39:32 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-07 20:27:50 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 20:27:50 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 20:27:50 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 20:27:58 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-07 20:28:00 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 20:28:00 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 20:28:00 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 20:28:00 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 20:28:08 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 20:28:10 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-07 20:28:10 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-07 20:28:10 [DEBUG] __init__ - <module>: interactive is False
+2025-04-07 20:28:10 [DEBUG] __init__ - <module>: platform is win32
+2025-04-07 20:28:10 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-07 20:28:10 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-07 20:28:16 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 20:28:16 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 20:28:18 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-07 20:28:19 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-07 20:28:19 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-07 20:28:19 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-07 20:28:20 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-07 20:28:22 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 20:28:24 [DEBUG] rpc - make_request: Making request HTTP. URI: https://goerli.infura.io/v3/your-infura-key, Method: web3_clientVersion
+2025-04-07 20:28:24 [DEBUG] http_session_manager - cache_and_return_session: Session cached: https://goerli.infura.io/v3/your-infura-key, <requests.sessions.Session object at 0x000001623E6EB980>
+2025-04-07 20:28:24 [DEBUG] connectionpool - _new_conn: Starting new HTTPS connection (1): goerli.infura.io:443
+2025-04-07 20:28:25 [DEBUG] connectionpool - _make_request: https://goerli.infura.io:443 "POST /v3/your-infura-key HTTP/1.1" 410 248
+2025-04-07 20:28:25 [INFO] blockchain_service - <module>: Connected to blockchain: False
+2025-04-07 20:28:25 [ERROR] blockchain_service - <module>: Failed to initialize blockchain connection: Non-hexadecimal digit found
+2025-04-07 20:28:25 [ERROR] image_processing - <module>: Failed to initialize car make classifier: [Errno 2] No such file or directory: 'car_make/yolo-coco\\model-weights-spectrico-mmr-mobilenet-128x128-344FF72B.pb'
+2025-04-07 20:28:26 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-07 20:28:26 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-07 20:28:26 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-07 20:28:26 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-07 21:19:49 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-07 21:19:49 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-07 21:19:49 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-07 21:19:55 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-07 21:19:56 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 21:19:56 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 21:19:56 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-07 21:19:56 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-07 21:19:59 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-07 21:20:00 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-07 21:20:00 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-07 21:20:00 [DEBUG] __init__ - <module>: interactive is False
+2025-04-07 21:20:00 [DEBUG] __init__ - <module>: platform is win32
+2025-04-07 21:20:00 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-07 21:20:00 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-07 21:20:03 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-07 21:20:03 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-07 21:20:05 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-07 21:20:05 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-07 21:20:05 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-07 21:20:05 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-07 21:20:05 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-07 21:20:06 [DEBUG] codec - <module>: Consider installing rusty-rlp to improve pyrlp performance with a rust basedbackend. Not currently functional for Python 3.11
+2025-04-07 21:20:07 [DEBUG] rpc - make_request: Making request HTTP. URI: http://localhost:8545, Method: web3_clientVersion
+2025-04-07 21:20:07 [DEBUG] http_session_manager - cache_and_return_session: Session cached: http://localhost:8545, <requests.sessions.Session object at 0x000001BE51B9F530>
+2025-04-07 21:20:07 [DEBUG] connectionpool - _new_conn: Starting new HTTP connection (1): localhost:8545
+2025-04-07 21:20:11 [INFO] blockchain_service - <module>: Connected to blockchain: False
+2025-04-07 21:20:11 [INFO] blockchain_service - <module>: Wallet address: 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf
+2025-04-07 21:20:11 [ERROR] image_processing - <module>: Failed to initialize car make classifier: [Errno 2] No such file or directory: 'car_make/yolo-coco\\model-weights-spectrico-mmr-mobilenet-128x128-344FF72B.pb'
+2025-04-07 21:20:11 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-07 21:20:11 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-07 21:20:11 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-07 21:20:11 [WARNING] _internal - _log:  * Debugger is active!

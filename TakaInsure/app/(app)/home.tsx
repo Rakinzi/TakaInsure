@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useUser } from '../../contexts/UserContext';
+import { getUserVehicles } from '../../services/vehicleService';
+import { getPoliciesByPolicyholder, PolicyWithProduct } from '../../services/policyService';
+import { getUserClaims, ClaimWithDetails } from '../../services/claimService';
+import { VehicleInfo } from '../../types/vehicle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-type UserData = {
-  full_name: string;
-  policyholder_id: string;
-};
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useUser();
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [vehicles, setVehicles] = useState<VehicleInfo[]>([]);
+  const [policies, setPolicies] = useState<PolicyWithProduct[]>([]);
+  const [claims, setClaims] = useState<ClaimWithDetails[]>([]);
 
   useEffect(() => {
     loadUserData();
@@ -20,21 +23,27 @@ export default function HomeScreen() {
 
   const loadUserData = async () => {
     try {
-      console.log('Loading user data...');
-      // Get user data from AsyncStorage
-      const userDataStr = await AsyncStorage.getItem('userData');
+      setLoading(true);
       
-      if (userDataStr) {
-        const parsedUserData = JSON.parse(userDataStr);
-        console.log('User data loaded successfully');
-        setUserData(parsedUserData);
-      } else {
-        console.log('No user data found in AsyncStorage');
+      if (!user || !user.policyholder_id) {
+        console.error('No user data found');
+        return;
       }
+      
+      // Load vehicles
+      const vehicleData = await getUserVehicles();
+      setVehicles(vehicleData);
+      
+      // Load policies
+      const policyData = await getPoliciesByPolicyholder(user.policyholder_id);
+      setPolicies(policyData);
+      
+      // Load claims
+      const claimData = await getUserClaims();
+      setClaims(claimData);
     } catch (error) {
       console.error('Error loading user data:', error);
     } finally {
-      // Always set loading to false, even if there's an error
       setLoading(false);
     }
   };
@@ -61,7 +70,19 @@ export default function HomeScreen() {
   };
 
   const handleSettings = () => {
-    router.push('settings');
+    router.push('/settings');
+  };
+
+  const handleViewVehicles = () => {
+    router.push('/vehicle');
+  };
+
+  const handleViewClaims = () => {
+    // We could implement a claims screen, but for now just show an alert
+    Alert.alert(
+      'Coming Soon',
+      'The claims management screen is coming soon. Check back later!'
+    );
   };
 
   if (loading) {
@@ -70,14 +91,6 @@ export default function HomeScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#8E1616" />
           <Text className="text-gray-600 mt-4">Loading your dashboard...</Text>
-          
-          {/* Debug button to bypass loading state */}
-          <TouchableOpacity 
-            onPress={() => setLoading(false)} 
-            className="mt-8 bg-gray-500 p-3 rounded-lg"
-          >
-            <Text className="text-white">Continue to Dashboard</Text>
-          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -91,11 +104,11 @@ export default function HomeScreen() {
           <View className="flex-row justify-between items-center mb-6">
             <View>
               <Text className="text-light text-lg">Welcome back,</Text>
-              <Text className="text-light text-2xl font-bold">{userData?.full_name || 'User'}</Text>
+              <Text className="text-light text-2xl font-bold">{user?.full_name || 'User'}</Text>
             </View>
             <TouchableOpacity onPress={handleProfile} className="bg-white p-2 rounded-full">
               <Image
-                source={require('../../assets/images/logo.png')}
+                source={require('../../../assets/images/logo.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -104,12 +117,34 @@ export default function HomeScreen() {
           
           <View className="bg-light p-4 rounded-xl">
             <Text className="text-primary font-bold mb-1">Policy Holder ID</Text>
-            <Text className="text-secondary text-lg">{userData?.policyholder_id || 'Not available'}</Text>
+            <Text className="text-secondary text-lg">{user?.policyholder_id || 'Not available'}</Text>
+          </View>
+        </View>
+
+        {/* Stats Section */}
+        <View className="p-6">
+          <Text className="text-primary text-xl font-bold mb-4">Account Summary</Text>
+          
+          <View className="flex-row space-x-4 mb-6">
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
+              <Text className="text-secondary text-2xl font-bold">{vehicles.length}</Text>
+              <Text className="text-primary">Vehicles</Text>
+            </View>
+            
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
+              <Text className="text-secondary text-2xl font-bold">{policies.length}</Text>
+              <Text className="text-primary">Policies</Text>
+            </View>
+            
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
+              <Text className="text-secondary text-2xl font-bold">{claims.length}</Text>
+              <Text className="text-primary">Claims</Text>
+            </View>
           </View>
         </View>
 
         {/* Quick Actions */}
-        <View className="p-6">
+        <View className="p-6 pt-0">
           <Text className="text-primary text-xl font-bold mb-4">Quick Actions</Text>
           
           <TouchableOpacity 
@@ -118,7 +153,7 @@ export default function HomeScreen() {
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/claim.png')}
+                source={require('../../../assets/images/claim.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -135,24 +170,24 @@ export default function HomeScreen() {
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/compliant.png')}
+                source={require('../../../assets/images/compliant.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
             </View>
             <View>
               <Text className="text-primary text-lg font-bold">My Policies</Text>
-              <Text className="text-gray-500">View your blockchain-secured policies</Text>
+              <Text className="text-gray-500">View your secured database policies</Text>
             </View>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            onPress={() => router.push('/vehicle')}
+            onPress={handleViewVehicles}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-green-500"
           >
             <View className="bg-green-100 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/secured.png')}
+                source={require('../../../assets/images/secured.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -164,12 +199,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            onPress={() => {}}
+            onPress={handleViewClaims}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-primary"
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/secured.png')}
+                source={require('../../../assets/images/secured.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -180,14 +215,14 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Add Network Settings button in quick actions */}
+          {/* Network Settings button in quick actions */}
           <TouchableOpacity 
             onPress={handleSettings}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-blue-500"
           >
             <View className="bg-blue-100 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/logo.png')}
+                source={require('../../../assets/images/logo.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -199,12 +234,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Blockchain Information */}
+        {/* Database Information */}
         <View className="p-6 pt-0">
           <View className="bg-primary/10 p-4 rounded-xl mb-6">
-            <Text className="text-primary font-bold mb-2">Blockchain Technology</Text>
+            <Text className="text-primary font-bold mb-2">Secure Database Technology</Text>
             <Text className="text-gray-700 mb-3">
-              All TakaInsure policies use blockchain technology to ensure transparency, security, and faster claim settlements.
+              All TakaInsure policies use secure database technology to ensure transparency, security, and faster claim settlements.
             </Text>
             <TouchableOpacity 
               onPress={handleViewPolicies}

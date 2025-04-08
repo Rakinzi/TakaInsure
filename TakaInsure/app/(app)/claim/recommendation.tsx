@@ -4,7 +4,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '../../../contexts/UserContext';
-import blockchainService, { PackageType } from '../../../services/blockchainService';
+import { createInsuranceProduct, createPolicy } from '../../../services/policyService';
+import { supabase } from '../../../services/supabaseClient';
 
 // Type definitions
 type InsurancePackage = {
@@ -18,7 +19,7 @@ type InsurancePackage = {
   recommended: boolean;
 };
 
-type BlockchainTransaction = {
+type PolicyTransaction = {
   transactionHash: string;
   blockNumber: number;
   timestamp: string;
@@ -32,34 +33,13 @@ export default function RecommendationScreen() {
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState<InsurancePackage[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-  const [transaction, setTransaction] = useState<BlockchainTransaction | null>(null);
+  const [transaction, setTransaction] = useState<PolicyTransaction | null>(null);
   const [processingStep, setProcessingStep] = useState<string>('');
   const [policyId, setPolicyId] = useState<string | null>(null);
 
   useEffect(() => {
     generatePackageRecommendations();
-    initializeBlockchain();
   }, [claimType, severity, cost]);
-
-  const initializeBlockchain = async () => {
-    try {
-      // In a real app, these would be environment variables or config settings
-      const rpcUrl = "https://goerli.infura.io/v3/your-infura-key"; // Example Ethereum testnet
-      const contractAddress = "0x1234567890123456789012345678901234567890"; // Example contract address
-      
-      // For demo purposes, we'll just use the mock methods
-      // In a real app, you would properly initialize the blockchain service
-      // await blockchainService.initialize(rpcUrl, contractAddress);
-      
-      console.log("Blockchain service ready for use");
-    } catch (error) {
-      console.error("Failed to initialize blockchain service:", error);
-      Alert.alert(
-        "Blockchain Connection Error",
-        "Could not connect to the blockchain network. Some features may be limited."
-      );
-    }
-  };
 
   const generatePackageRecommendations = () => {
     // This would come from an API in a real app
@@ -79,8 +59,8 @@ export default function RecommendationScreen() {
           'Claims up to coverage limit',
           'Basic incident coverage',
           'Standard processing time',
-          'Blockchain-verified policy',
-          'Smart contract claims processing',
+          'Verified policy',
+          'Smart processing',
         ],
         recommended: severity === 'minor',
       },
@@ -96,8 +76,8 @@ export default function RecommendationScreen() {
           'Extended damage coverage',
           'Faster claim processing',
           'Lower deductibles',
-          'Blockchain-verified policy',
-          'Smart contract claims processing',
+          'Verified policy',
+          'Smart processing',
           'Transparent policy management',
         ],
         recommended: severity === 'moderate',
@@ -115,8 +95,8 @@ export default function RecommendationScreen() {
           'Priority claim processing',
           'Zero deductible',
           'Additional benefits package',
-          'Blockchain-verified policy',
-          'Smart contract claims processing',
+          'Verified policy',
+          'Smart processing',
           'Transparent policy management',
           'Automatic claim settlement',
         ],
@@ -145,7 +125,7 @@ export default function RecommendationScreen() {
     }
 
     setLoading(true);
-    setProcessingStep('Initializing transaction...');
+    setProcessingStep('Initializing your insurance policy...');
 
     try {
       // Get the selected package
@@ -161,61 +141,100 @@ export default function RecommendationScreen() {
           ? 'Standard' 
           : 'Premium';
       
-      // In a real app, you would have the user's blockchain wallet address
-      // For demo purposes, we'll use a placeholder
-      const walletAddress = "0xdummy123456789000000000000000000000000000";
-      
       // Update status
-      setProcessingStep('Creating blockchain record...');
+      setProcessingStep('Creating your insurance policy...');
       
-      // Call blockchain service
-      // In a real app, this would interact with the actual smart contract
-      // For demo purposes, we'll use a mock transaction
-      const result = await blockchainService.createMockTransaction('policy');
+      // First check if insurance product already exists
+      const { data: existingProducts, error: queryError } = await supabase
+        .from('insurance_product')
+        .select('product_id')
+        .ilike('product_name', `%${packageType}%`)
+        .eq('status', 'active');
+        
+      if (queryError) {
+        console.error('Error checking for existing products:', queryError);
+        throw new Error(`Database error: ${queryError.message}`);
+      }
       
-      if (result.success) {
-        // Store transaction data
-        setTransaction(result);
+      let productId;
+      
+      // If product exists, use it, otherwise create a new one
+      if (existingProducts && existingProducts.length > 0) {
+        productId = existingProducts[0].product_id;
+      } else {
+        // We need to create a new product
+        setProcessingStep('Setting up insurance details...');
         
-        // Generate a policy ID (in a real app, this would come from the blockchain)
-        const newPolicyId = `POL${Math.floor(Math.random() * 1000000)}`;
-        setPolicyId(newPolicyId);
-        
-        // Store policy data in local storage for demo purposes
-        const policyData = {
-          id: newPolicyId,
-          packageType,
-          coverageAmount: packageData.coverageAmount,
-          premium: packageData.premium,
-          term: packageData.term,
-          features: packageData.features,
-          transactionHash: result.transactionHash,
-          blockNumber: result.blockNumber,
-          timestamp: result.timestamp,
-          policyholderName: user.full_name,
-          policyHolderId: user.policyholder_id,
+        // Create insurance product
+        const productData = {
+          product_name: `${packageType} Coverage Plan`,
+          product_description: packageData.description,
+          coverage_amount: packageData.coverageAmount,
+          premium_amount: packageData.premium,
+          policy_term: packageData.term,
+          eligibility_criteria: 'Open to all registered users.',
+          exclusions: 'Pre-existing conditions may not be covered.',
+          status: 'active'
         };
         
-        // Save the policy data
-        const existingPoliciesJson = await AsyncStorage.getItem('userPolicies');
-        const existingPolicies = existingPoliciesJson ? JSON.parse(existingPoliciesJson) : [];
-        existingPolicies.push(policyData);
-        await AsyncStorage.setItem('userPolicies', JSON.stringify(existingPolicies));
+        const newProductId = await createInsuranceProduct(productData);
+        if (!newProductId) {
+          throw new Error('Failed to create insurance product');
+        }
         
-        // Show success message
-        Alert.alert(
-          'Success',
-          'Your insurance package has been activated and secured using blockchain technology for transparency and security.',
-          [
-            {
-              text: 'View Dashboard',
-              onPress: () => router.replace('/(app)/home'),
-            },
-          ]
-        );
-      } else {
-        throw new Error('Blockchain transaction failed');
+        productId = newProductId;
       }
+      
+      // Calculate dates
+      const startDate = new Date().toISOString().split('T')[0];
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + packageData.term);
+      const endDateString = endDate.toISOString().split('T')[0];
+      
+      // Create the policy
+      setProcessingStep('Finalizing your policy...');
+      const newPolicyId = await createPolicy(
+        user.policyholder_id,
+        productId,
+        packageData.coverageAmount,
+        packageData.premium,
+        startDate,
+        endDateString,
+        'monthly',
+        {
+          source: 'app',
+          claimType: claimType,
+          severity: severity,
+          cost: cost || 0
+        }
+      );
+      
+      if (!newPolicyId) {
+        throw new Error('Failed to create policy');
+      }
+      
+      setPolicyId(newPolicyId);
+      
+      // Create a simple transaction record for UI display
+      const timestamp = new Date().toISOString();
+      setTransaction({
+        transactionHash: `pol_${newPolicyId.substring(0, 8)}`,
+        blockNumber: Math.floor(Math.random() * 1000000),
+        timestamp,
+        success: true
+      });
+      
+      // Show success message
+      Alert.alert(
+        'Success',
+        'Your insurance package has been activated and securely stored in our database.',
+        [
+          {
+            text: 'View Dashboard',
+            onPress: () => router.replace('/(app)/home'),
+          },
+        ]
+      );
     } catch (error) {
       console.error('Error subscribing to insurance:', error);
       Alert.alert('Error', 'Failed to subscribe to insurance package. Please try again.');
@@ -231,7 +250,7 @@ export default function RecommendationScreen() {
       <Text className="text-primary font-bold text-lg mb-2">Processing Your Policy</Text>
       <Text className="text-center text-gray-600 mb-4">{processingStep}</Text>
       <Text className="text-center text-gray-500">
-        Your insurance policy is being recorded on the blockchain for maximum transparency and security.
+        Your insurance policy is being recorded in our secure database system for maximum transparency and security.
       </Text>
     </View>
   );
@@ -241,17 +260,17 @@ export default function RecommendationScreen() {
     
     return (
       <View className="bg-white rounded-xl p-6 mb-6">
-        <Text className="text-primary font-bold text-lg mb-3">Blockchain Confirmation</Text>
+        <Text className="text-primary font-bold text-lg mb-3">Policy Confirmation</Text>
         <Text className="text-green-700 font-semibold mb-4">Transaction Successful</Text>
         
         <View className="bg-gray-50 p-4 rounded-lg mb-4">
-          <Text className="text-primary font-medium mb-1">Transaction Hash</Text>
+          <Text className="text-primary font-medium mb-1">Reference ID</Text>
           <Text className="text-gray-600 font-mono text-sm">{transaction.transactionHash}</Text>
         </View>
         
         <View className="flex-row">
           <View className="flex-1 mr-2">
-            <Text className="text-primary font-medium mb-1">Block Number</Text>
+            <Text className="text-primary font-medium mb-1">Entry ID</Text>
             <Text className="text-gray-600">{transaction.blockNumber}</Text>
           </View>
           <View className="flex-1 ml-2">
@@ -283,10 +302,10 @@ export default function RecommendationScreen() {
         {loading ? renderProcessingView() : transaction ? renderTransactionDetails() : (
           <>
             <View className="bg-secondary/10 rounded-xl p-5 mb-6">
-              <Text className="text-primary font-semibold mb-2">Why blockchain?</Text>
+              <Text className="text-primary font-semibold mb-2">Why choose TakaInsure?</Text>
               <Text className="text-gray-700">
-                All our insurance packages use blockchain technology to ensure transparency, 
-                security, and faster claim settlements through smart contracts.
+                All our insurance packages use secure database technology to ensure transparency, 
+                security, and faster claim settlements through automated processing.
               </Text>
             </View>
 
@@ -346,13 +365,13 @@ export default function RecommendationScreen() {
             </TouchableOpacity>
 
             <View className="bg-primary/10 rounded-xl p-5 mb-6">
-              <Text className="text-primary font-semibold mb-2">Smart Contract Benefits</Text>
+              <Text className="text-primary font-semibold mb-2">Security Benefits</Text>
               <Text className="text-gray-700 mb-2">
-                Your insurance policy will be secured as a smart contract on the blockchain, offering:
+                Your insurance policy will be secured in our database system, offering:
               </Text>
               <View className="ml-3">
                 <Text className="text-gray-600 mb-1">• Transparent policy terms</Text>
-                <Text className="text-gray-600 mb-1">• Automatic claim processing</Text>
+                <Text className="text-gray-600 mb-1">• Automated claim processing</Text>
                 <Text className="text-gray-600 mb-1">• Tamper-proof record keeping</Text>
                 <Text className="text-gray-600">• Fast payment settlements</Text>
               </View>

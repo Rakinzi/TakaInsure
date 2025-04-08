@@ -2,57 +2,36 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '../../../contexts/UserContext';
-
-type PolicyData = {
-  id: string;
-  packageType: string;
-  coverageAmount: number;
-  premium: number;
-  term: number;
-  features: string[];
-  transactionHash?: string;
-  blockNumber?: number;
-  timestamp?: string;
-  policyholderName: string;
-  policyHolderId: string;
-};
+import { getPolicyById, PolicyWithProduct } from '../../../services/policyService';
 
 export default function PolicyDetailsScreen() {
   const router = useRouter();
   const { policyId } = useLocalSearchParams();
   const { user } = useUser();
   const [loading, setLoading] = useState(true);
-  const [policyData, setPolicyData] = useState<PolicyData | null>(null);
+  const [policyData, setPolicyData] = useState<PolicyWithProduct | null>(null);
 
   useEffect(() => {
-    loadPolicyData();
+    if (policyId) {
+      loadPolicyData(policyId as string);
+    }
   }, [policyId]);
 
-  const loadPolicyData = async () => {
+  const loadPolicyData = async (id: string) => {
     try {
       setLoading(true);
-      
-      // In a real app, this would fetch data from an API or blockchain
-      // For demo purposes, we'll get the policy from AsyncStorage
-      const policiesJson = await AsyncStorage.getItem('userPolicies');
-      if (policiesJson) {
-        const policies = JSON.parse(policiesJson);
-        const policy = policies.find((p: PolicyData) => p.id === policyId);
-        
-        if (policy) {
-          setPolicyData(policy);
-        }
-      }
+      const policy = await getPolicyById(id);
+      setPolicyData(policy);
     } catch (error) {
       console.error('Error loading policy data:', error);
+      Alert.alert('Error', 'Failed to load policy details. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleViewBlockchainDetails = () => {
+  const handleViewPolicyDetails = () => {
     router.push({
       pathname: '/policy/blockchain-details',
       params: { policyId }
@@ -71,15 +50,17 @@ export default function PolicyDetailsScreen() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const getRemainingTerm = (dateString?: string) => {
-    if (!dateString || !policyData) return 'N/A';
+  const getRemainingTerm = (endDate?: string) => {
+    if (!endDate) return 'N/A';
     
-    const startDate = new Date(dateString);
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + policyData.term);
-    
+    const end = new Date(endDate);
     const today = new Date();
-    const remainingDays = Math.max(0, Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+    
+    if (end < today) {
+      return 'Expired';
+    }
+    
+    const remainingDays = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
     return `${remainingDays} days`;
   };
@@ -100,7 +81,7 @@ export default function PolicyDetailsScreen() {
       <ScrollView className="flex-1 p-6">
         <Text className="text-primary text-2xl font-bold mb-2">Policy Details</Text>
         <Text className="text-gray-600 mb-6">
-          Review your blockchain-secured insurance policy
+          Review your secure insurance policy
         </Text>
 
         {policyData ? (
@@ -108,12 +89,12 @@ export default function PolicyDetailsScreen() {
             <View className="bg-secondary/10 rounded-xl p-5 mb-6">
               <View className="flex-row justify-between mb-1">
                 <Text className="text-primary font-bold">Policy ID:</Text>
-                <Text className="text-secondary font-bold">{policyData.id}</Text>
+                <Text className="text-secondary font-bold">{policyData.policy_id}</Text>
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-primary font-bold">Status:</Text>
                 <View className="bg-green-100 px-3 py-1 rounded-full">
-                  <Text className="text-green-800 font-medium">Active</Text>
+                  <Text className="text-green-800 font-medium">{policyData.status.charAt(0).toUpperCase() + policyData.status.slice(1)}</Text>
                 </View>
               </View>
             </View>
@@ -124,64 +105,77 @@ export default function PolicyDetailsScreen() {
               <View className="bg-light p-3 rounded-lg mb-3">
                 <View className="flex-row justify-between mb-1">
                   <Text className="text-primary font-medium">Package</Text>
-                  <Text className="text-secondary font-bold">{policyData.packageType}</Text>
+                  <Text className="text-secondary font-bold">{policyData.insurance_product.product_name}</Text>
                 </View>
                 <View className="flex-row justify-between mb-1">
                   <Text className="text-primary font-medium">Coverage Amount</Text>
-                  <Text className="text-secondary font-bold">${policyData.coverageAmount.toLocaleString()}</Text>
+                  <Text className="text-secondary font-bold">${policyData.coverage_amount.toLocaleString()}</Text>
                 </View>
                 <View className="flex-row justify-between mb-1">
                   <Text className="text-primary font-medium">Monthly Premium</Text>
-                  <Text className="text-secondary font-bold">${policyData.premium.toLocaleString()}</Text>
+                  <Text className="text-secondary font-bold">${policyData.premium_amount.toLocaleString()}</Text>
                 </View>
                 <View className="flex-row justify-between">
                   <Text className="text-primary font-medium">Term</Text>
-                  <Text className="text-secondary font-bold">{policyData.term} months</Text>
+                  <Text className="text-secondary font-bold">{policyData.insurance_product.policy_term} months</Text>
                 </View>
               </View>
               
               <View className="bg-light p-3 rounded-lg">
                 <View className="flex-row justify-between mb-1">
-                  <Text className="text-primary font-medium">Activation Date</Text>
-                  <Text className="text-gray-700">{formatDate(policyData.timestamp)}</Text>
+                  <Text className="text-primary font-medium">Start Date</Text>
+                  <Text className="text-gray-700">{formatDate(policyData.start_date)}</Text>
+                </View>
+                <View className="flex-row justify-between mb-1">
+                  <Text className="text-primary font-medium">End Date</Text>
+                  <Text className="text-gray-700">{formatDate(policyData.end_date)}</Text>
                 </View>
                 <View className="flex-row justify-between">
                   <Text className="text-primary font-medium">Remaining Term</Text>
-                  <Text className="text-gray-700">{getRemainingTerm(policyData.timestamp)}</Text>
+                  <Text className="text-gray-700">{getRemainingTerm(policyData.end_date)}</Text>
                 </View>
               </View>
             </View>
 
             <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
-              <Text className="text-primary font-bold text-lg mb-3">Covered Features</Text>
-              
-              <View className="ml-2">
-                {policyData.features.map((feature, index) => (
-                  <Text key={index} className="text-gray-600 mb-2">• {feature}</Text>
-                ))}
-              </View>
-            </View>
-
-            <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
-              <Text className="text-primary font-bold text-lg mb-3">Blockchain Security</Text>
+              <Text className="text-primary font-bold text-lg mb-3">Policy Description</Text>
               
               <Text className="text-gray-600 mb-3">
-                Your policy is secured on the blockchain for maximum transparency and security.
-                This creates an immutable record that cannot be altered.
+                {policyData.insurance_product.product_description}
               </Text>
               
-              {policyData.transactionHash ? (
-                <View className="bg-gray-50 p-3 rounded-lg mb-3">
-                  <Text className="text-gray-500">Transaction Hash</Text>
-                  <Text className="text-gray-700 font-mono text-xs">{policyData.transactionHash}</Text>
+              {policyData.insurance_product.eligibility_criteria && (
+                <View className="mb-2">
+                  <Text className="text-primary font-bold mb-1">Eligibility:</Text>
+                  <Text className="text-gray-600">{policyData.insurance_product.eligibility_criteria}</Text>
                 </View>
-              ) : null}
+              )}
+              
+              {policyData.insurance_product.exclusions && (
+                <View>
+                  <Text className="text-primary font-bold mb-1">Exclusions:</Text>
+                  <Text className="text-gray-600">{policyData.insurance_product.exclusions}</Text>
+                </View>
+              )}
+            </View>
+
+            <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
+              <Text className="text-primary font-bold text-lg mb-3">Policy Security</Text>
+              
+              <Text className="text-gray-600 mb-3">
+                Your policy is securely stored in our database with enterprise-grade protection. This creates an immutable record that cannot be altered.
+              </Text>
+              
+              <View className="bg-gray-50 p-3 rounded-lg mb-3">
+                <Text className="text-gray-500">Policy Reference</Text>
+                <Text className="text-gray-700 font-mono text-xs">{policyData.policy_id}</Text>
+              </View>
               
               <TouchableOpacity
-                onPress={handleViewBlockchainDetails}
+                onPress={handleViewPolicyDetails}
                 className="bg-primary p-3 rounded-lg items-center"
               >
-                <Text className="text-white font-medium">View Blockchain Details</Text>
+                <Text className="text-white font-medium">View Policy Details</Text>
               </TouchableOpacity>
             </View>
 

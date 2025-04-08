@@ -20,6 +20,11 @@ from app.services.file_upload_service import (
 )
 from app.services.image_processing import process_car_image, process_plate_image
 
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
+VEHICLE_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'vehicles')
+CLAIM_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'claims')
+PROFILE_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'profiles')
+
 logger = logging.getLogger(__name__)
 
 vehicle_bp = Blueprint('vehicle', __name__)

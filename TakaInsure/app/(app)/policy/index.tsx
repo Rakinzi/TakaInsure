@@ -2,23 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '../../../contexts/UserContext';
-
-type PolicyData = {
-  id: string;
-  packageType: string;
-  coverageAmount: number;
-  premium: number;
-  term: number;
-  timestamp?: string;
-};
+import { getPoliciesByPolicyholder, PolicyWithProduct } from '../../../services/policyService';
 
 export default function PolicyListScreen() {
   const router = useRouter();
   const { user } = useUser();
   const [loading, setLoading] = useState(true);
-  const [policies, setPolicies] = useState<PolicyData[]>([]);
+  const [policies, setPolicies] = useState<PolicyWithProduct[]>([]);
 
   useEffect(() => {
     loadPolicies();
@@ -28,16 +19,14 @@ export default function PolicyListScreen() {
     try {
       setLoading(true);
       
-      // In a real app, this would fetch data from an API or blockchain
-      // For demo purposes, we'll get the policies from AsyncStorage
-      const policiesJson = await AsyncStorage.getItem('userPolicies');
-      if (policiesJson) {
-        const parsedPolicies = JSON.parse(policiesJson);
-        setPolicies(parsedPolicies);
-      } else {
-        // If no policies found, set empty array
+      if (!user || !user.policyholder_id) {
+        console.error('No user or policyholder ID found');
         setPolicies([]);
+        return;
       }
+      
+      const policyData = await getPoliciesByPolicyholder(user.policyholder_id);
+      setPolicies(policyData);
     } catch (error) {
       console.error('Error loading policies:', error);
       setPolicies([]);
@@ -58,39 +47,39 @@ export default function PolicyListScreen() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const renderPolicyItem = ({ item }: { item: PolicyData }) => (
+  const renderPolicyItem = ({ item }: { item: PolicyWithProduct }) => (
     <TouchableOpacity
-      onPress={() => handleViewPolicy(item.id)}
+      onPress={() => handleViewPolicy(item.policy_id)}
       className="bg-white rounded-xl p-4 shadow-sm mb-4 border-l-4 border-secondary"
     >
       <View className="flex-row justify-between mb-1">
-        <Text className="text-primary font-bold">{item.packageType} Plan</Text>
+        <Text className="text-primary font-bold">{item.insurance_product.product_name}</Text>
         <View className="bg-green-100 px-2 py-0.5 rounded-full">
-          <Text className="text-green-800 text-xs font-medium">Active</Text>
+          <Text className="text-green-800 text-xs font-medium">{item.status.charAt(0).toUpperCase() + item.status.slice(1)}</Text>
         </View>
       </View>
       
-      <Text className="text-gray-500 text-xs mb-2">Policy ID: {item.id}</Text>
+      <Text className="text-gray-500 text-xs mb-2">Policy ID: {item.policy_id}</Text>
       
       <View className="flex-row justify-between mb-1">
         <Text className="text-gray-600">Coverage</Text>
-        <Text className="text-secondary font-medium">${item.coverageAmount.toLocaleString()}</Text>
+        <Text className="text-secondary font-medium">${item.coverage_amount.toLocaleString()}</Text>
       </View>
       
       <View className="flex-row justify-between mb-1">
         <Text className="text-gray-600">Premium</Text>
-        <Text className="text-secondary font-medium">${item.premium.toLocaleString()}/month</Text>
+        <Text className="text-secondary font-medium">${item.premium_amount.toLocaleString()}/{item.payment_frequency}</Text>
       </View>
       
       <View className="flex-row justify-between">
-        <Text className="text-gray-600">Activation Date</Text>
-        <Text className="text-gray-700">{formatDate(item.timestamp)}</Text>
+        <Text className="text-gray-600">Start Date</Text>
+        <Text className="text-gray-700">{formatDate(item.start_date)}</Text>
       </View>
       
       <View className="mt-3 pt-2 border-t border-gray-200">
         <View className="flex-row items-center">
           <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-          <Text className="text-primary font-medium">Blockchain Secured</Text>
+          <Text className="text-primary font-medium">Secured Policy</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -116,9 +105,11 @@ export default function PolicyListScreen() {
             <FlatList
               data={policies}
               renderItem={renderPolicyItem}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item.policy_id}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 20 }}
+              refreshing={loading}
+              onRefresh={loadPolicies}
             />
           ) : (
             <View className="flex-1 justify-center items-center">

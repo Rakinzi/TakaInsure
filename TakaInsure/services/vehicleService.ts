@@ -1,9 +1,8 @@
 import { VehicleInfo, VehicleDetectionResult, PlateDetectionResult } from '../types/vehicle';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase, getVehiclesFromSupabase, getVehicleFromSupabase } from './supabaseClient';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { supabase } from './supabaseClient';
+import { getApiUrl } from './networkService';
 
 /**
  * Creates a form data object from an image URI
@@ -39,6 +38,7 @@ const getAuthHeader = async () => {
 export const detectLicensePlate = async (imageUri: string): Promise<PlateDetectionResult | null> => {
   try {
     const formData = createImageFormData(imageUri);
+    const API_URL = await getApiUrl();
     
     const response = await axios.post(
       `${API_URL}/license-plate/detect`,
@@ -70,6 +70,7 @@ export const detectLicensePlate = async (imageUri: string): Promise<PlateDetecti
 export const detectCarMakeModel = async (imageUri: string): Promise<VehicleDetectionResult | null> => {
   try {
     const formData = createImageFormData(imageUri);
+    const API_URL = await getApiUrl();
     
     const response = await axios.post(
       `${API_URL}/car-recognition/detect`,
@@ -109,88 +110,99 @@ export const detectCarMakeModel = async (imageUri: string): Promise<VehicleDetec
 };
 
 /**
+ * Upload an image to Supabase storage
+ */
+const uploadImageToStorage = async (imageUri: string, folder: string, filename: string): Promise<string | null> => {
+  try {
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+    
+    const fileExt = imageUri.split('.').pop() || 'jpg';
+    const filePath = `${folder}/${filename}.${fileExt}`;
+    
+    const { data, error } = await supabase
+      .storage
+      .from('takainsure')
+      .upload(filePath, blob, {
+        contentType: `image/${fileExt}`,
+        upsert: true
+      });
+    
+    if (error) {
+      console.error('Error uploading image to Supabase storage:', error);
+      return null;
+    }
+    
+    // Get public URL of the uploaded file
+    const { data: urlData } = supabase
+      .storage
+      .from('takainsure')
+      .getPublicUrl(filePath);
+    
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Image upload error:', error);
+    return null;
+  }
+};
+
+/**
  * Service to register a vehicle
  */
 export const registerVehicle = async (vehicleInfo: VehicleInfo): Promise<string> => {
   try {
-    const formData = new FormData();
-    
     // Get user data to associate with the vehicle
     const userData = await AsyncStorage.getItem('userData');
     const user = userData ? JSON.parse(userData) : null;
     const policyHolderId = user?.policyholder_id || null;
     
-    // Add vehicle details
-    formData.append('plate_number', vehicleInfo.plateNumber);
-    formData.append('car_make', vehicleInfo.carMake);
-    formData.append('car_model', vehicleInfo.carModel);
-    if (vehicleInfo.carYear) formData.append('car_year', vehicleInfo.carYear);
-    if (policyHolderId) formData.append('policyholder_id', policyHolderId);
+    if (!policyHolderId) {
+      throw new Error('No policyholder ID found - user must be logged in');
+    }
     
-    // Add car image if exists
+    // Upload vehicle images to storage if provided
+    let carImageUrl = null;
+    let plateImageUrl = null;
+    
     if (vehicleInfo.carImageUri) {
-      const carFilename = vehicleInfo.carImageUri.split('/').pop() || 'car.jpg';
-      const carMatch = /\.(\w+)$/.exec(carFilename);
-      const carType = carMatch ? `image/${carMatch[1]}` : 'image/jpeg';
-      
-      formData.append('car_image', {
-        uri: vehicleInfo.carImageUri,
-        name: carFilename,
-        type: carType,
-      } as any);
+      const filename = `car_${new Date().getTime()}`;
+      carImageUrl = await uploadImageToStorage(vehicleInfo.carImageUri, 'vehicles', filename);
     }
     
-    // Add plate image if exists
     if (vehicleInfo.plateImageUri) {
-      const plateFilename = vehicleInfo.plateImageUri.split('/').pop() || 'plate.jpg';
-      const plateMatch = /\.(\w+)$/.exec(plateFilename);
-      const plateType = plateMatch ? `image/${plateMatch[1]}` : 'image/jpeg';
-      
-      formData.append('plate_image', {
-        uri: vehicleInfo.plateImageUri,
-        name: plateFilename,
-        type: plateType,
-      } as any);
+      const filename = `plate_${new Date().getTime()}`;
+      plateImageUrl = await uploadImageToStorage(vehicleInfo.plateImageUri, 'plates', filename);
     }
     
-    const headers = await getAuthHeader();
+    // Prepare vehicle data for insertion
+    const vehicleData = {
+      policyholder_id: policyHolderId,
+      plate_number: vehicleInfo.plateNumber,
+      car_make: vehicleInfo.carMake,
+      car_model: vehicleInfo.carModel,
+      car_year: vehicleInfo.carYear,
+      car_image_url: carImageUrl,
+      plate_image_url: plateImageUrl,
+      status: 'active'
+    };
     
-    const response = await axios.post(
-      `${API_URL}/vehicle/register`,
-      formData,
-      {
-        headers: {
-          ...headers,
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
+    // Insert into vehicles table
+    const { data, error } = await supabase
+      .from('vehicles')
+      .insert([vehicleData])
+      .select();
     
-    if (response.data && response.data.success) {
-      // Save the vehicle info locally
-      const vehicleId = response.data.vehicleId;
-      
-      // Update the vehicle info with ID
-      const updatedVehicleInfo = {
-        ...vehicleInfo,
-        id: vehicleId,
-        timestamp: new Date().toISOString(),
-      };
-      
-      // Get existing vehicles or initialize new array
-      const existingVehiclesJson = await AsyncStorage.getItem('userVehicles');
-      const existingVehicles = existingVehiclesJson ? JSON.parse(existingVehiclesJson) : [];
-      
-      // Add the new vehicle
-      existingVehicles.push(updatedVehicleInfo);
-      
-      // Save updated list
-      await AsyncStorage.setItem('userVehicles', JSON.stringify(existingVehicles));
-      
-      return vehicleId;
-    } else {
-      throw new Error(response.data.error || 'Failed to register vehicle');
+    if (error) {
+      console.error('Error registering vehicle in Supabase:', error);
+      throw error;
     }
+    
+    if (!data || data.length === 0) {
+      throw new Error('Failed to create vehicle record');
+    }
+    
+    const vehicleId = data[0].vehicle_id;
+    return vehicleId;
   } catch (error) {
     console.error('Vehicle registration error:', error);
     throw error;
@@ -212,69 +224,35 @@ export const getUserVehicles = async (): Promise<VehicleInfo[]> => {
       return [];
     }
     
-    // Validate UUID format
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidPattern.test(policyHolderId)) {
-      console.error('Invalid policyholder ID format - not a valid UUID');
+    // Get vehicles from Supabase
+    const { data, error } = await supabase
+      .from('vehicles')
+      .select('*')
+      .eq('policyholder_id', policyHolderId);
+    
+    if (error) {
+      console.error('Error fetching vehicles:', error);
       return [];
     }
     
-    // Try to get directly from Supabase first
-    try {
-      const vehicles = await getVehiclesFromSupabase(policyHolderId);
-      
-      if (vehicles && vehicles.length > 0) {
-        const formattedVehicles = vehicles.map(vehicle => ({
-          id: vehicle.vehicle_id,
-          plateNumber: vehicle.plate_number,
-          carMake: vehicle.car_make,
-          carModel: vehicle.car_model,
-          carYear: vehicle.car_year,
-          carImageUri: vehicle.car_image_url,
-          plateImageUri: vehicle.plate_image_url,
-          timestamp: vehicle.created_at,
-          status: vehicle.status,
-          policyHolderId: vehicle.policyholder_id
-        }));
-        
-        // Update local storage with latest data
-        await AsyncStorage.setItem('userVehicles', JSON.stringify(formattedVehicles));
-        
-        return formattedVehicles;
-      }
-    } catch (supabaseError) {
-      console.warn('Supabase fetch failed, trying API fallback:', supabaseError);
-    }
+    // Format the vehicles
+    const formattedVehicles = data.map(vehicle => ({
+      id: vehicle.vehicle_id,
+      plateNumber: vehicle.plate_number,
+      carMake: vehicle.car_make,
+      carModel: vehicle.car_model,
+      carYear: vehicle.car_year,
+      carImageUri: vehicle.car_image_url,
+      plateImageUri: vehicle.plate_image_url,
+      timestamp: vehicle.created_at,
+      status: vehicle.status,
+      policyHolderId: vehicle.policyholder_id
+    }));
     
-    // Fallback to API if Supabase fails
-    try {
-      const headers = await getAuthHeader();
-      
-      const response = await axios.get(
-        `${API_URL}/vehicle/list?policyholder_id=${policyHolderId}`,
-        { headers }
-      );
-      
-      if (response.data && response.data.vehicles) {
-        // Update local storage with latest data
-        await AsyncStorage.setItem('userVehicles', JSON.stringify(response.data.vehicles));
-        return response.data.vehicles;
-      }
-    } catch (apiError) {
-      console.warn('Failed to fetch vehicles from API:', apiError);
-      // If API fails, return local data
-      const localVehiclesJson = await AsyncStorage.getItem('userVehicles');
-      return localVehiclesJson ? JSON.parse(localVehiclesJson) : [];
-    }
-    
-    // If all methods fail, return empty array
-    return [];
+    return formattedVehicles;
   } catch (error) {
     console.error('Get user vehicles error:', error);
-    
-    // Return cached data from local storage as fallback
-    const localVehiclesJson = await AsyncStorage.getItem('userVehicles');
-    return localVehiclesJson ? JSON.parse(localVehiclesJson) : [];
+    return [];
   }
 };
 
@@ -283,50 +261,35 @@ export const getUserVehicles = async (): Promise<VehicleInfo[]> => {
  */
 export const getVehicleById = async (vehicleId: string): Promise<VehicleInfo | null> => {
   try {
-    // First check local storage
-    const vehiclesJson = await AsyncStorage.getItem('userVehicles');
-    const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];
+    // Get vehicle from Supabase
+    const { data, error } = await supabase
+      .from('vehicles')
+      .select('*')
+      .eq('vehicle_id', vehicleId)
+      .single();
     
-    const localVehicle = vehicles.find((v: VehicleInfo) => v.id === vehicleId);
-    
-    // If found locally, return it
-    if (localVehicle) return localVehicle;
-    
-    // Try to get directly from Supabase
-    try {
-      const vehicle = await getVehicleFromSupabase(vehicleId);
-      
-      if (vehicle) {
-        return {
-          id: vehicle.vehicle_id,
-          plateNumber: vehicle.plate_number,
-          carMake: vehicle.car_make,
-          carModel: vehicle.car_model,
-          carYear: vehicle.car_year,
-          carImageUri: vehicle.car_image_url,
-          plateImageUri: vehicle.plate_image_url,
-          timestamp: vehicle.created_at,
-          status: vehicle.status,
-          policyHolderId: vehicle.policyholder_id
-        };
-      }
-    } catch (supabaseError) {
-      console.warn(`Supabase vehicle query error for ${vehicleId}:`, supabaseError);
+    if (error) {
+      console.error(`Error fetching vehicle ${vehicleId}:`, error);
+      return null;
     }
     
-    // Fallback to API if Supabase fails
-    const headers = await getAuthHeader();
-    
-    const response = await axios.get(
-      `${API_URL}/vehicle/${vehicleId}`,
-      { headers }
-    );
-    
-    if (response.data && response.data.vehicle) {
-      return response.data.vehicle;
+    if (!data) {
+      return null;
     }
     
-    return null;
+    // Format the vehicle
+    return {
+      id: data.vehicle_id,
+      plateNumber: data.plate_number,
+      carMake: data.car_make,
+      carModel: data.car_model,
+      carYear: data.car_year,
+      carImageUri: data.car_image_url,
+      plateImageUri: data.plate_image_url,
+      timestamp: data.created_at,
+      status: data.status,
+      policyHolderId: data.policyholder_id
+    };
   } catch (error) {
     console.error(`Get vehicle ${vehicleId} error:`, error);
     return null;
@@ -338,38 +301,47 @@ export const getVehicleById = async (vehicleId: string): Promise<VehicleInfo | n
  */
 export const updateVehicle = async (vehicleId: string, updates: Partial<VehicleInfo>): Promise<VehicleInfo | null> => {
   try {
-    const headers = await getAuthHeader();
+    // Prepare update data
+    const updateData: any = {};
     
-    // Prepare data for API request
-    const data: any = {};
+    if (updates.plateNumber) updateData.plate_number = updates.plateNumber;
+    if (updates.carMake) updateData.car_make = updates.carMake;
+    if (updates.carModel) updateData.car_model = updates.carModel;
+    if (updates.carYear) updateData.car_year = updates.carYear;
+    if (updates.status) updateData.status = updates.status;
     
-    if (updates.plateNumber) data.plateNumber = updates.plateNumber;
-    if (updates.carMake) data.carMake = updates.carMake;
-    if (updates.carModel) data.carModel = updates.carModel;
-    if (updates.carYear) data.carYear = updates.carYear;
-    if (updates.status) data.status = updates.status;
+    // Add updated timestamp
+    updateData.updated_at = new Date().toISOString();
     
-    const response = await axios.put(
-      `${API_URL}/vehicle/${vehicleId}`,
-      data,
-      { headers }
-    );
+    // Update in Supabase
+    const { data, error } = await supabase
+      .from('vehicles')
+      .update(updateData)
+      .eq('vehicle_id', vehicleId)
+      .select();
     
-    if (response.data && response.data.success && response.data.vehicle) {
-      // Update local storage
-      const vehiclesJson = await AsyncStorage.getItem('userVehicles');
-      const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];
-      
-      const updatedVehicles = vehicles.map((v: VehicleInfo) => 
-        v.id === vehicleId ? { ...v, ...response.data.vehicle } : v
-      );
-      
-      await AsyncStorage.setItem('userVehicles', JSON.stringify(updatedVehicles));
-      
-      return response.data.vehicle;
-    } else {
-      throw new Error(response.data?.error || 'Failed to update vehicle');
+    if (error) {
+      console.error(`Error updating vehicle ${vehicleId}:`, error);
+      throw error;
     }
+    
+    if (!data || data.length === 0) {
+      throw new Error('Failed to update vehicle');
+    }
+    
+    // Format the updated vehicle
+    return {
+      id: data[0].vehicle_id,
+      plateNumber: data[0].plate_number,
+      carMake: data[0].car_make,
+      carModel: data[0].car_model,
+      carYear: data[0].car_year,
+      carImageUri: data[0].car_image_url,
+      plateImageUri: data[0].plate_image_url,
+      timestamp: data[0].created_at,
+      status: data[0].status,
+      policyHolderId: data[0].policyholder_id
+    };
   } catch (error) {
     console.error(`Update vehicle ${vehicleId} error:`, error);
     throw error;
@@ -385,62 +357,57 @@ export const updateVehicleImages = async (
   plateImageUri?: string
 ): Promise<VehicleInfo | null> => {
   try {
-    const headers = await getAuthHeader();
+    const updateData: any = {
+      updated_at: new Date().toISOString()
+    };
     
-    const formData = new FormData();
-    
-    // Add car image if provided
+    // Upload car image if provided
     if (carImageUri) {
-      const carFilename = carImageUri.split('/').pop() || 'car.jpg';
-      const carMatch = /\.(\w+)$/.exec(carFilename);
-      const carType = carMatch ? `image/${carMatch[1]}` : 'image/jpeg';
-      
-      formData.append('car_image', {
-        uri: carImageUri,
-        name: carFilename,
-        type: carType,
-      } as any);
-    }
-    
-    // Add plate image if provided
-    if (plateImageUri) {
-      const plateFilename = plateImageUri.split('/').pop() || 'plate.jpg';
-      const plateMatch = /\.(\w+)$/.exec(plateFilename);
-      const plateType = plateMatch ? `image/${plateMatch[1]}` : 'image/jpeg';
-      
-      formData.append('plate_image', {
-        uri: plateImageUri,
-        name: plateFilename,
-        type: plateType,
-      } as any);
-    }
-    
-    const response = await axios.put(
-      `${API_URL}/vehicle/${vehicleId}/images`,
-      formData,
-      {
-        headers: {
-          ...headers,
-          'Content-Type': 'multipart/form-data',
-        },
+      const filename = `car_${vehicleId}_${new Date().getTime()}`;
+      const carImageUrl = await uploadImageToStorage(carImageUri, 'vehicles', filename);
+      if (carImageUrl) {
+        updateData.car_image_url = carImageUrl;
       }
-    );
-    
-    if (response.data && response.data.success && response.data.vehicle) {
-      // Update local storage
-      const vehiclesJson = await AsyncStorage.getItem('userVehicles');
-      const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];
-      
-      const updatedVehicles = vehicles.map((v: VehicleInfo) => 
-        v.id === vehicleId ? { ...v, ...response.data.vehicle } : v
-      );
-      
-      await AsyncStorage.setItem('userVehicles', JSON.stringify(updatedVehicles));
-      
-      return response.data.vehicle;
-    } else {
-      throw new Error(response.data?.error || 'Failed to update vehicle images');
     }
+    
+    // Upload plate image if provided
+    if (plateImageUri) {
+      const filename = `plate_${vehicleId}_${new Date().getTime()}`;
+      const plateImageUrl = await uploadImageToStorage(plateImageUri, 'plates', filename);
+      if (plateImageUrl) {
+        updateData.plate_image_url = plateImageUrl;
+      }
+    }
+    
+    // Update in Supabase
+    const { data, error } = await supabase
+      .from('vehicles')
+      .update(updateData)
+      .eq('vehicle_id', vehicleId)
+      .select();
+    
+    if (error) {
+      console.error(`Error updating vehicle images ${vehicleId}:`, error);
+      throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      throw new Error('Failed to update vehicle images');
+    }
+    
+    // Format the updated vehicle
+    return {
+      id: data[0].vehicle_id,
+      plateNumber: data[0].plate_number,
+      carMake: data[0].car_make,
+      carModel: data[0].car_model,
+      carYear: data[0].car_year,
+      carImageUri: data[0].car_image_url,
+      plateImageUri: data[0].plate_image_url,
+      timestamp: data[0].created_at,
+      status: data[0].status,
+      policyHolderId: data[0].policyholder_id
+    };
   } catch (error) {
     console.error(`Update vehicle images ${vehicleId} error:`, error);
     throw error;
@@ -452,26 +419,18 @@ export const updateVehicleImages = async (
  */
 export const deleteVehicle = async (vehicleId: string): Promise<boolean> => {
   try {
-    const headers = await getAuthHeader();
+    // Delete from Supabase
+    const { error } = await supabase
+      .from('vehicles')
+      .delete()
+      .eq('vehicle_id', vehicleId);
     
-    const response = await axios.delete(
-      `${API_URL}/vehicle/${vehicleId}`,
-      { headers }
-    );
-    
-    if (response.data && response.data.success) {
-      // Update local storage
-      const vehiclesJson = await AsyncStorage.getItem('userVehicles');
-      const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];
-      
-      const updatedVehicles = vehicles.filter((v: VehicleInfo) => v.id !== vehicleId);
-      
-      await AsyncStorage.setItem('userVehicles', JSON.stringify(updatedVehicles));
-      
-      return true;
-    } else {
-      throw new Error(response.data?.error || 'Failed to delete vehicle');
+    if (error) {
+      console.error(`Error deleting vehicle ${vehicleId}:`, error);
+      throw error;
     }
+    
+    return true;
   } catch (error) {
     console.error(`Delete vehicle ${vehicleId} error:`, error);
     throw error;

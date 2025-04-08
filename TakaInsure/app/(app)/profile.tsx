@@ -3,17 +3,18 @@ import { View, Text, ScrollView, TouchableOpacity, Alert, Image, ActivityIndicat
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { logoutUser } from '../../services/supabaseAuth';
+
+type UserData = {
+    full_name: string | null;
+    policyholder_id: string | null;
+    contact_details: string | null;
+    date_of_birth: string | null;
+    address: string | null;
+};
 
 export default function ProfileScreen() {
     const router = useRouter();
-    const [userData, setUserData] = useState<{
-        full_name: string | null;
-        policyholder_id: string | null;
-        contact_details: string | null;
-        date_of_birth: string | null;
-        address: string | null;
-    } | null>(null);;
+    const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -55,7 +56,7 @@ export default function ProfileScreen() {
 
     const handleLogout = async () => {
         try {
-            // Either use the logout function or directly clear AsyncStorage
+            // Clear all authentication data
             await AsyncStorage.multiRemove(['userToken', 'policyHolderId', 'phoneNumber', 'userData']);
             router.replace('/login');
         } catch (error) {
@@ -123,13 +124,13 @@ export default function ProfileScreen() {
                 </View>
 
                 <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
-                    <Text className="text-primary font-bold text-lg mb-4">Blockchain Transparency</Text>
+                    <Text className="text-primary font-bold text-lg mb-4">Database Transparency</Text>
                     <Text className="text-gray-600 mb-3">
-                        Your insurance policies and claims are recorded on blockchain for transparency and security.
+                        Your insurance policies and claims are recorded in our secure database for transparency and security.
                     </Text>
 
                     <TouchableOpacity className="bg-primary p-3 rounded-lg flex-row justify-center items-center">
-                        <Text className="text-white font-medium ml-2">View Blockchain Records</Text>
+                        <Text className="text-white font-medium ml-2">View Database Records</Text>
                     </TouchableOpacity>
                 </View>
 

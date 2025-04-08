@@ -2,20 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useUser } from '../../contexts/UserContext';
-import { getUserVehicles } from '../../services/vehicleService';
-import { getPoliciesByPolicyholder, PolicyWithProduct } from '../../services/policyService';
-import { getUserClaims, ClaimWithDetails } from '../../services/claimService';
-import { VehicleInfo } from '../../types/vehicle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../services/supabaseClient';
+import { getPoliciesByPolicyholder } from '../../services/policyService';
+import { getUserVehicles } from '../../services/vehicleService';
+import { getUserClaims } from '../../services/claimService';
+
+type UserData = {
+  full_name: string;
+  policyholder_id: string;
+  contact_details?: string;
+  date_of_birth?: string;
+  address?: string;
+};
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user } = useUser();
   const [loading, setLoading] = useState(true);
-  const [vehicles, setVehicles] = useState<VehicleInfo[]>([]);
-  const [policies, setPolicies] = useState<PolicyWithProduct[]>([]);
-  const [claims, setClaims] = useState<ClaimWithDetails[]>([]);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [vehicleCount, setVehicleCount] = useState(0);
+  const [policyCount, setPolicyCount] = useState(0);
+  const [claimCount, setClaimCount] = useState(0);
 
   useEffect(() => {
     loadUserData();
@@ -25,22 +32,45 @@ export default function HomeScreen() {
     try {
       setLoading(true);
       
-      if (!user || !user.policyholder_id) {
-        console.error('No user data found');
-        return;
+      // Get user data from AsyncStorage
+      const userDataStr = await AsyncStorage.getItem('userData');
+      
+      if (userDataStr) {
+        const parsedUserData = JSON.parse(userDataStr);
+        setUserData(parsedUserData);
+        
+        // Now we have the user data, let's fetch their other information
+        await Promise.all([
+          fetchVehicles(parsedUserData.policyholder_id),
+          fetchPolicies(parsedUserData.policyholder_id),
+          fetchClaims()
+        ]);
+      } else {
+        // Try to construct minimal user data from individual storage items
+        const policyHolderId = await AsyncStorage.getItem('policyHolderId');
+        const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+        
+        if (policyHolderId && phoneNumber) {
+          const minimalUserData = {
+            policyholder_id: policyHolderId,
+            full_name: 'User', // Default name
+            contact_details: phoneNumber,
+          };
+          
+          setUserData(minimalUserData);
+          
+          // Use the minimal user data to fetch other information
+          await Promise.all([
+            fetchVehicles(policyHolderId),
+            fetchPolicies(policyHolderId),
+            fetchClaims()
+          ]);
+        } else {
+          console.log('No user data found in AsyncStorage');
+          // If we can't get user data, redirect to login
+          router.replace('/login');
+        }
       }
-      
-      // Load vehicles
-      const vehicleData = await getUserVehicles();
-      setVehicles(vehicleData);
-      
-      // Load policies
-      const policyData = await getPoliciesByPolicyholder(user.policyholder_id);
-      setPolicies(policyData);
-      
-      // Load claims
-      const claimData = await getUserClaims();
-      setClaims(claimData);
     } catch (error) {
       console.error('Error loading user data:', error);
     } finally {
@@ -48,12 +78,43 @@ export default function HomeScreen() {
     }
   };
 
+  const fetchVehicles = async (policyHolderId: string) => {
+    try {
+      const vehicles = await getUserVehicles();
+      setVehicleCount(vehicles.length);
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+      setVehicleCount(0);
+    }
+  };
+
+  const fetchPolicies = async (policyHolderId: string) => {
+    try {
+      const policies = await getPoliciesByPolicyholder(policyHolderId);
+      setPolicyCount(policies.length);
+    } catch (error) {
+      console.error('Error fetching policies:', error);
+      setPolicyCount(0);
+    }
+  };
+
+  const fetchClaims = async () => {
+    try {
+      const claims = await getUserClaims();
+      setClaimCount(claims.length);
+    } catch (error) {
+      console.error('Error fetching claims:', error);
+      setClaimCount(0);
+    }
+  };
+
   const handleLogout = async () => {
     try {
-      await AsyncStorage.multiRemove(['userToken', 'userData']);
+      await AsyncStorage.multiRemove(['userToken', 'userData', 'policyHolderId', 'phoneNumber']);
       router.replace('/login');
     } catch (error) {
       console.error('Error during logout:', error);
+      Alert.alert('Error', 'Failed to log out. Please try again.');
     }
   };
 
@@ -78,7 +139,6 @@ export default function HomeScreen() {
   };
 
   const handleViewClaims = () => {
-    // We could implement a claims screen, but for now just show an alert
     Alert.alert(
       'Coming Soon',
       'The claims management screen is coming soon. Check back later!'
@@ -104,7 +164,7 @@ export default function HomeScreen() {
           <View className="flex-row justify-between items-center mb-6">
             <View>
               <Text className="text-light text-lg">Welcome back,</Text>
-              <Text className="text-light text-2xl font-bold">{user?.full_name || 'User'}</Text>
+              <Text className="text-light text-2xl font-bold">{userData?.full_name || 'User'}</Text>
             </View>
             <TouchableOpacity onPress={handleProfile} className="bg-white p-2 rounded-full">
               <Image
@@ -117,7 +177,7 @@ export default function HomeScreen() {
           
           <View className="bg-light p-4 rounded-xl">
             <Text className="text-primary font-bold mb-1">Policy Holder ID</Text>
-            <Text className="text-secondary text-lg">{user?.policyholder_id || 'Not available'}</Text>
+            <Text className="text-secondary text-lg">{userData?.policyholder_id || 'Not available'}</Text>
           </View>
         </View>
 
@@ -127,17 +187,17 @@ export default function HomeScreen() {
           
           <View className="flex-row space-x-4 mb-6">
             <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
-              <Text className="text-secondary text-2xl font-bold">{vehicles.length}</Text>
+              <Text className="text-secondary text-2xl font-bold">{vehicleCount}</Text>
               <Text className="text-primary">Vehicles</Text>
             </View>
             
             <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
-              <Text className="text-secondary text-2xl font-bold">{policies.length}</Text>
+              <Text className="text-secondary text-2xl font-bold">{policyCount}</Text>
               <Text className="text-primary">Policies</Text>
             </View>
             
             <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
-              <Text className="text-secondary text-2xl font-bold">{claims.length}</Text>
+              <Text className="text-secondary text-2xl font-bold">{claimCount}</Text>
               <Text className="text-primary">Claims</Text>
             </View>
           </View>

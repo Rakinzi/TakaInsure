@@ -2,20 +2,35 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useUser } from '../../../contexts/UserContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getPolicyById, PolicyWithProduct } from '../../../services/policyService';
 
 export default function PolicyDetailsScreen() {
   const router = useRouter();
   const { policyId } = useLocalSearchParams();
-  const { user } = useUser();
   const [loading, setLoading] = useState(true);
   const [policyData, setPolicyData] = useState<PolicyWithProduct | null>(null);
+  const [userData, setUserData] = useState<any>(null);
 
   useEffect(() => {
-    if (policyId) {
-      loadPolicyData(policyId as string);
-    }
+    const loadData = async () => {
+      try {
+        // Load user data from AsyncStorage
+        const userDataStr = await AsyncStorage.getItem('userData');
+        if (userDataStr) {
+          setUserData(JSON.parse(userDataStr));
+        }
+      
+        // Load policy details
+        if (policyId) {
+          await loadPolicyData(policyId as string);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+    
+    loadData();
   }, [policyId]);
 
   const loadPolicyData = async (id: string) => {

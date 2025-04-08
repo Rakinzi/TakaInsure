@@ -20,10 +20,6 @@ from app.services.file_upload_service import (
 )
 from app.services.image_processing import process_car_image, process_plate_image
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
-VEHICLE_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'vehicles')
-CLAIM_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'claims')
-PROFILE_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'profiles')
 
 logger = logging.getLogger(__name__)
 
@@ -459,21 +455,36 @@ def delete_vehicle_record(vehicle_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 # Serve uploaded files
+# Serve uploaded files
 @vehicle_bp.route('/uploads/<path:filename>')
 def serve_upload(filename):
     """
     Serve uploaded files
     """
     try:
-        # Determine the upload folder based on the file path
-        if filename.startswith('vehicles/'):
-            return send_from_directory(os.path.dirname(VEHICLE_UPLOAD_FOLDER), filename)
-        elif filename.startswith('claims/'):
-            return send_from_directory(os.path.dirname(CLAIM_UPLOAD_FOLDER), filename)
-        elif filename.startswith('profiles/'):
-            return send_from_directory(os.path.dirname(PROFILE_UPLOAD_FOLDER), filename)
-        else:
-            return send_from_directory(UPLOAD_FOLDER, filename)
+        # Get the base directory (project root)
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        # Construct full path to the uploads folder
+        uploads_folder = os.path.join(base_dir, 'uploads')
+        
+        # Full path to the requested file
+        file_path = os.path.join(uploads_folder, filename)
+        
+        # Get the directory containing the file and the file name
+        directory = os.path.dirname(file_path)
+        file_name = os.path.basename(file_path)
+        
+        # Check if the file exists
+        if not os.path.exists(file_path):
+            logger.warning(f"File not found: {file_path}")
+            return jsonify({"success": False, "error": "File not found"}), 404
+        
+        # Log the file being served
+        logger.info(f"Serving file: {file_path}")
+        
+        # Serve the file from the directory
+        return send_from_directory(directory, file_name)
     except Exception as e:
         logger.exception(f"Error serving file {filename}: {str(e)}")
         return jsonify({"success": False, "error": "File not found"}), 404

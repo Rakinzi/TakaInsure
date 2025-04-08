@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useUser } from '../../../contexts/UserContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getPoliciesByPolicyholder, PolicyWithProduct } from '../../../services/policyService';
 
 export default function PolicyListScreen() {
   const router = useRouter();
-  const { user } = useUser();
   const [loading, setLoading] = useState(true);
   const [policies, setPolicies] = useState<PolicyWithProduct[]>([]);
 
@@ -19,13 +18,26 @@ export default function PolicyListScreen() {
     try {
       setLoading(true);
       
-      if (!user || !user.policyholder_id) {
-        console.error('No user or policyholder ID found');
-        setPolicies([]);
-        return;
+      // Get policyholder ID from AsyncStorage
+      const userDataStr = await AsyncStorage.getItem('userData');
+      let policyHolderId = '';
+      
+      if (userDataStr) {
+        const userData = JSON.parse(userDataStr);
+        policyHolderId = userData.policyholder_id;
+      } else {
+        // Try to get the policyholder ID directly
+        const storedPolicyHolderId = await AsyncStorage.getItem('policyHolderId');
+        if (storedPolicyHolderId) {
+          policyHolderId = storedPolicyHolderId;
+        } else {
+          console.error('No policyholder ID found');
+          setPolicies([]);
+          return;
+        }
       }
       
-      const policyData = await getPoliciesByPolicyholder(user.policyholder_id);
+      const policyData = await getPoliciesByPolicyholder(policyHolderId);
       setPolicies(policyData);
     } catch (error) {
       console.error('Error loading policies:', error);

@@ -3,9 +3,8 @@ import { View, Text, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicat
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useUser } from '../../../contexts/UserContext';
-import { createInsuranceProduct, createPolicy } from '../../../services/policyService';
 import { supabase } from '../../../services/supabaseClient';
+import { createInsuranceProduct, createPolicy } from '../../../services/policyService';
 
 // Type definitions
 type InsurancePackage = {
@@ -29,8 +28,8 @@ type PolicyTransaction = {
 export default function RecommendationScreen() {
   const router = useRouter();
   const { claimType, severity, cost } = useLocalSearchParams();
-  const { user } = useUser();
   const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
   const [packages, setPackages] = useState<InsurancePackage[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [transaction, setTransaction] = useState<PolicyTransaction | null>(null);
@@ -38,8 +37,39 @@ export default function RecommendationScreen() {
   const [policyId, setPolicyId] = useState<string | null>(null);
 
   useEffect(() => {
+    loadUserData();
     generatePackageRecommendations();
   }, [claimType, severity, cost]);
+
+  const loadUserData = async () => {
+    try {
+      // Get user data from AsyncStorage
+      const userDataStr = await AsyncStorage.getItem('userData');
+      
+      if (userDataStr) {
+        const parsedUserData = JSON.parse(userDataStr);
+        setUserData(parsedUserData);
+      } else {
+        // Try to construct minimal user data from individual storage items
+        const policyHolderId = await AsyncStorage.getItem('policyHolderId');
+        const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+        
+        if (policyHolderId && phoneNumber) {
+          setUserData({
+            policyholder_id: policyHolderId,
+            full_name: 'User', // Default name
+            contact_details: phoneNumber,
+          });
+        } else {
+          console.log('No user data found in AsyncStorage');
+          // If we can't get user data, redirect to login
+          router.replace('/login');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
 
   const generatePackageRecommendations = () => {
     // This would come from an API in a real app
@@ -119,7 +149,7 @@ export default function RecommendationScreen() {
       return;
     }
 
-    if (!user) {
+    if (!userData || !userData.policyholder_id) {
       Alert.alert('Authentication Required', 'Please log in to subscribe to an insurance package.');
       return;
     }
@@ -194,7 +224,7 @@ export default function RecommendationScreen() {
       // Create the policy
       setProcessingStep('Finalizing your policy...');
       const newPolicyId = await createPolicy(
-        user.policyholder_id,
+        userData.policyholder_id,
         productId,
         packageData.coverageAmount,
         packageData.premium,

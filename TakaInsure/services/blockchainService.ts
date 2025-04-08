@@ -1,10 +1,16 @@
 import { VehicleInfo, VehicleDetectionResult, PlateDetectionResult } from '../types/vehicle';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiUrl } from './network';
 
 // Use environment variable if available, otherwise use localhost for development
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
+let API_URL: string;
 
+const initApiUrl = async () => {
+  if (!API_URL) {
+    API_URL = await getApiUrl();
+  }
+};
 /**
  * Creates a form data object from an image URI
  */
@@ -38,6 +44,7 @@ const getAuthHeader = async () => {
  */
 export const detectLicensePlate = async (imageUri: string): Promise<PlateDetectionResult | null> => {
   try {
+    await initApiUrl(); // Ensure API_URL is initialized
     const formData = createImageFormData(imageUri);
     
     const response = await axios.post(
@@ -69,6 +76,7 @@ export const detectLicensePlate = async (imageUri: string): Promise<PlateDetecti
  */
 export const detectCarMakeModel = async (imageUri: string): Promise<VehicleDetectionResult | null> => {
   try {
+    await initApiUrl(); // Ensure API_URL is initialized
     const formData = createImageFormData(imageUri);
     
     const response = await axios.post(
@@ -113,6 +121,7 @@ export const detectCarMakeModel = async (imageUri: string): Promise<VehicleDetec
  */
 export const registerVehicle = async (vehicleInfo: VehicleInfo): Promise<string> => {
   try {
+    await initApiUrl(); // Ensure API_URL is initialized
     const formData = new FormData();
     
     // Add vehicle details
@@ -197,6 +206,7 @@ export const registerVehicle = async (vehicleInfo: VehicleInfo): Promise<string>
  */
 export const getUserVehicles = async (): Promise<VehicleInfo[]> => {
   try {
+    await initApiUrl(); // Ensure API_URL is initialized
     // First try to get from local storage for faster response
     const localVehiclesJson = await AsyncStorage.getItem('userVehicles');
     const localVehicles = localVehiclesJson ? JSON.parse(localVehiclesJson) : [];
@@ -233,6 +243,7 @@ export const getUserVehicles = async (): Promise<VehicleInfo[]> => {
  */
 export const getVehicleById = async (vehicleId: string): Promise<VehicleInfo | null> => {
   try {
+    await initApiUrl(); // Ensure API_URL is initialized
     // First check local storage
     const vehiclesJson = await AsyncStorage.getItem('userVehicles');
     const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];

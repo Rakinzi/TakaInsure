@@ -1,7 +1,7 @@
 import { VehicleInfo, VehicleDetectionResult, PlateDetectionResult } from '../types/vehicle';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getApiUrl } from './network';
+import { getApiUrl } from './networkService';
 
 // Use environment variable if available, otherwise use localhost for development
 let API_URL: string;

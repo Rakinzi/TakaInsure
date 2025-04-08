@@ -1,121 +1,196 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Network from 'expo-network';
+import { getApiUrl } from './networkService';
 
-// API URL configuration
-class ApiUrlManager {
-  private static instance: ApiUrlManager;
-  private apiUrl: string | null = null;
-
-  private constructor() {}
-
-  // Singleton pattern to ensure only one instance exists
-  public static getInstance(): ApiUrlManager {
-    if (!ApiUrlManager.instance) {
-      ApiUrlManager.instance = new ApiUrlManager();
-    }
-    return ApiUrlManager.instance;
-  }
-
-  // Method to get the API URL dynamically
-  public async getApiUrl(): Promise<string> {
-    // Check if URL is already cached
-    if (this.apiUrl) {
-      return this.apiUrl;
-    }
-
-    // Try to get cached URL from AsyncStorage
-    const cachedUrl = await AsyncStorage.getItem('API_BASE_URL');
-    if (cachedUrl) {
-      this.apiUrl = cachedUrl;
-      return cachedUrl;
-    }
-
-    // Dynamically get IP address
-    try {
-      const ip = await Network.getIpAddressAsync();
-      this.apiUrl = `http://${ip}:5000/api`;
-      
-      // Cache the URL for future use
-      await AsyncStorage.setItem('API_BASE_URL', this.apiUrl);
-      
-      return this.apiUrl;
-    } catch (error) {
-      console.warn('Could not get IP address, falling back to localhost');
-      this.apiUrl = 'http://localhost:5000/api';
-      
-      // Cache the fallback URL
-      await AsyncStorage.setItem('API_BASE_URL', this.apiUrl);
-      
-      return this.apiUrl;
-    }
-  }
-
-  // Method to manually set or override the API URL
-  public async setApiUrl(url: string): Promise<void> {
-    this.apiUrl = url;
-    await AsyncStorage.setItem('API_BASE_URL', url);
-  }
-
-  // Method to reset the API URL
-  public async resetApiUrl(): Promise<void> {
-    this.apiUrl = null;
-    await AsyncStorage.removeItem('API_BASE_URL');
-  }
+// Package types enum
+export enum PackageType {
+  Basic = 0,
+  Standard = 1,
+  Premium = 2
 }
 
-// Create an axios instance with a dynamic base URL
-const createDynamicApiInstance = async () => {
-  const apiUrlManager = ApiUrlManager.getInstance();
-  const baseURL = await apiUrlManager.getApiUrl();
+// Use environment variable if available, otherwise use localhost for development
+let API_URL: string;
 
-  const api = axios.create({
-    baseURL,
-    timeout: 10000,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  // Request interceptor to add authentication token
-  api.interceptors.request.use(
-    async (config) => {
-      const token = await AsyncStorage.getItem('userToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
-
-  // Response interceptor to handle common errors
-  api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
-      
-      // Handle 401 Unauthorized errors (token expired)
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
-        
-        // Clear storage and redirect to login
-        await AsyncStorage.multiRemove(['userToken', 'policyHolderId', 'phoneNumber']);
-        
-        return Promise.reject(error);
-      }
-      
-      return Promise.reject(error);
-    }
-  );
-
-  return api;
+const initApiUrl = async () => {
+  if (!API_URL) {
+    API_URL = await getApiUrl();
+  }
 };
 
-// Export the API URL manager and a function to get the dynamic API instance
-export { 
-  ApiUrlManager, 
-  createDynamicApiInstance 
+/**
+ * Get authentication header with the user token
+ */
+const getAuthHeader = async () => {
+  const userToken = await AsyncStorage.getItem('userToken');
+  return {
+    Authorization: `Bearer ${userToken}`,
+  };
+};
+
+/**
+ * Create a mock transaction (simulating blockchain operations)
+ * In a real app, this would make actual blockchain transactions
+ */
+export const createMockTransaction = async (type: 'policy' | 'claim' | 'vehicle'): Promise<any> => {
+  await initApiUrl(); // Ensure API_URL is initialized
+  
+  // For a demo, we'll generate a fake transaction hash
+  const transactionHash = '0x' + Array.from({length: 64}, () => 
+    Math.floor(Math.random() * 16).toString(16)).join('');
+  
+  // Mock blockchain data
+  return {
+    success: true,
+    transactionHash,
+    blockNumber: 12345678 + Math.floor(Math.random() * 10000),
+    timestamp: new Date().toISOString(),
+  };
+};
+
+/**
+ * Register a policy on the blockchain
+ */
+export const registerPolicy = async (
+  packageType: PackageType,
+  coverageAmount: number,
+  premium: number,
+  termInDays: number
+): Promise<any> => {
+  try {
+    await initApiUrl(); // Ensure API_URL is initialized
+    const headers = await getAuthHeader();
+    
+    console.log(`Registering policy on blockchain via ${API_URL}/blockchain/policy`);
+    
+    // In a real app, this would be an actual API call
+    // const response = await axios.post(
+    //   `${API_URL}/blockchain/policy`,
+    //   {
+    //     packageType,
+    //     coverageAmount,
+    //     premium,
+    //     termInDays
+    //   },
+    //   { headers }
+    // );
+    
+    // return response.data;
+    
+    // For demo purposes, simulate a successful blockchain transaction
+    return createMockTransaction('policy');
+  } catch (error) {
+    console.error('Blockchain policy registration error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Register a claim on the blockchain
+ */
+export const registerClaim = async (policyId: string, claimAmount: number, evidence: string): Promise<any> => {
+  try {
+    await initApiUrl(); // Ensure API_URL is initialized
+    const headers = await getAuthHeader();
+    
+    console.log(`Registering claim on blockchain via ${API_URL}/blockchain/claim`);
+    
+    // In a real app, this would be an actual API call
+    // const response = await axios.post(
+    //   `${API_URL}/blockchain/claim`,
+    //   {
+    //     policyId,
+    //     claimAmount,
+    //     evidence
+    //   },
+    //   { headers }
+    // );
+    
+    // return response.data;
+    
+    // For demo purposes, simulate a successful blockchain transaction
+    return createMockTransaction('claim');
+  } catch (error) {
+    console.error('Blockchain claim registration error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Register a vehicle on the blockchain
+ */
+export const registerVehicle = async (
+  plateNumber: string,
+  make: string,
+  model: string,
+  year?: string
+): Promise<any> => {
+  try {
+    await initApiUrl(); // Ensure API_URL is initialized
+    const headers = await getAuthHeader();
+    
+    console.log(`Registering vehicle on blockchain via ${API_URL}/blockchain/vehicle`);
+    
+    // In a real app, this would be an actual API call
+    // const response = await axios.post(
+    //   `${API_URL}/blockchain/vehicle`,
+    //   {
+    //     plateNumber,
+    //     make,
+    //     model,
+    //     year
+    //   },
+    //   { headers }
+    // );
+    
+    // return response.data;
+    
+    // For demo purposes, simulate a successful blockchain transaction
+    return createMockTransaction('vehicle');
+  } catch (error) {
+    console.error('Blockchain vehicle registration error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Verify a transaction on the blockchain
+ */
+export const verifyTransaction = async (transactionHash: string): Promise<any> => {
+  try {
+    await initApiUrl(); // Ensure API_URL is initialized
+    const headers = await getAuthHeader();
+    
+    console.log(`Verifying transaction on blockchain via ${API_URL}/blockchain/verify`);
+    
+    // In a real app, this would be an actual API call
+    // const response = await axios.get(
+    //   `${API_URL}/blockchain/verify/${transactionHash}`,
+    //   { headers }
+    // );
+    
+    // return response.data;
+    
+    // For demo purposes, simulate a successful verification
+    return {
+      success: true,
+      verified: true,
+      blockNumber: 12345678,
+      timestamp: new Date().toISOString(),
+      from: '0x1234567890123456789012345678901234567890',
+      to: '0x0987654321098765432109876543210987654321',
+    };
+  } catch (error) {
+    console.error('Blockchain verification error:', error);
+    throw error;
+  }
+};
+
+export default {
+  PackageType,
+  createMockTransaction,
+  registerPolicy,
+  registerClaim,
+  registerVehicle,
+  verifyTransaction
 };

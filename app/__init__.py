@@ -2,6 +2,7 @@ from flask import Flask, request, g
 import time
 import logging
 import os
+from flask_cors import CORS
 
 try:
     from app.config.logging_config import setup_logging
@@ -13,6 +14,7 @@ except ImportError:
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)  # Enable CORS for all routes
     
     # Set up logging
     logger = setup_logging(app)

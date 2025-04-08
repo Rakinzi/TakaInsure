@@ -1,15 +1,9 @@
 import { VehicleInfo, VehicleDetectionResult, PlateDetectionResult } from '../types/vehicle';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getApiUrl } from './networkService';
+import { supabase, getVehiclesFromSupabase, getVehicleFromSupabase } from './supabaseClient';
 
-let API_URL: string;
-
-const initApiUrl = async () => {
-  if (!API_URL) {
-    API_URL = await getApiUrl();
-  }
-};
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 /**
  * Creates a form data object from an image URI
@@ -44,10 +38,7 @@ const getAuthHeader = async () => {
  */
 export const detectLicensePlate = async (imageUri: string): Promise<PlateDetectionResult | null> => {
   try {
-    await initApiUrl(); // Ensure API_URL is initialized
     const formData = createImageFormData(imageUri);
-    
-    console.log(`Sending license plate detection request to ${API_URL}/license-plate/detect`);
     
     const response = await axios.post(
       `${API_URL}/license-plate/detect`,
@@ -78,10 +69,7 @@ export const detectLicensePlate = async (imageUri: string): Promise<PlateDetecti
  */
 export const detectCarMakeModel = async (imageUri: string): Promise<VehicleDetectionResult | null> => {
   try {
-    await initApiUrl(); // Ensure API_URL is initialized
     const formData = createImageFormData(imageUri);
-    
-    console.log(`Sending car recognition request to ${API_URL}/car-recognition/detect`);
     
     const response = await axios.post(
       `${API_URL}/car-recognition/detect`,
@@ -125,14 +113,19 @@ export const detectCarMakeModel = async (imageUri: string): Promise<VehicleDetec
  */
 export const registerVehicle = async (vehicleInfo: VehicleInfo): Promise<string> => {
   try {
-    await initApiUrl(); // Ensure API_URL is initialized
     const formData = new FormData();
+    
+    // Get user data to associate with the vehicle
+    const userData = await AsyncStorage.getItem('userData');
+    const user = userData ? JSON.parse(userData) : null;
+    const policyHolderId = user?.policyholder_id || null;
     
     // Add vehicle details
     formData.append('plate_number', vehicleInfo.plateNumber);
     formData.append('car_make', vehicleInfo.carMake);
     formData.append('car_model', vehicleInfo.carModel);
     if (vehicleInfo.carYear) formData.append('car_year', vehicleInfo.carYear);
+    if (policyHolderId) formData.append('policyholder_id', policyHolderId);
     
     // Add car image if exists
     if (vehicleInfo.carImageUri) {
@@ -162,8 +155,6 @@ export const registerVehicle = async (vehicleInfo: VehicleInfo): Promise<string>
     
     const headers = await getAuthHeader();
     
-    console.log(`Registering vehicle with API: ${API_URL}/vehicle/register`);
-    
     const response = await axios.post(
       `${API_URL}/vehicle/register`,
       formData,
@@ -179,11 +170,10 @@ export const registerVehicle = async (vehicleInfo: VehicleInfo): Promise<string>
       // Save the vehicle info locally
       const vehicleId = response.data.vehicleId;
       
-      // Update the vehicle info with blockchain reference and ID
+      // Update the vehicle info with ID
       const updatedVehicleInfo = {
         ...vehicleInfo,
         id: vehicleId,
-        blockchainReference: response.data.blockchainReference,
         timestamp: new Date().toISOString(),
       };
       
@@ -212,19 +202,56 @@ export const registerVehicle = async (vehicleInfo: VehicleInfo): Promise<string>
  */
 export const getUserVehicles = async (): Promise<VehicleInfo[]> => {
   try {
-    await initApiUrl(); // Ensure API_URL is initialized
-    // First try to get from local storage for faster response
-    const localVehiclesJson = await AsyncStorage.getItem('userVehicles');
-    const localVehicles = localVehiclesJson ? JSON.parse(localVehiclesJson) : [];
+    // Get user data to find policyholder ID
+    const userData = await AsyncStorage.getItem('userData');
+    const user = userData ? JSON.parse(userData) : null;
+    const policyHolderId = user?.policyholder_id;
     
-    // Then fetch from API to ensure we have the latest data
-    const headers = await getAuthHeader();
+    if (!policyHolderId) {
+      console.error('No policyholder ID found in user data');
+      return [];
+    }
     
+    // Validate UUID format
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidPattern.test(policyHolderId)) {
+      console.error('Invalid policyholder ID format - not a valid UUID');
+      return [];
+    }
+    
+    // Try to get directly from Supabase first
     try {
-      console.log(`Getting user vehicles from API: ${API_URL}/vehicle/list`);
+      const vehicles = await getVehiclesFromSupabase(policyHolderId);
+      
+      if (vehicles && vehicles.length > 0) {
+        const formattedVehicles = vehicles.map(vehicle => ({
+          id: vehicle.vehicle_id,
+          plateNumber: vehicle.plate_number,
+          carMake: vehicle.car_make,
+          carModel: vehicle.car_model,
+          carYear: vehicle.car_year,
+          carImageUri: vehicle.car_image_url,
+          plateImageUri: vehicle.plate_image_url,
+          timestamp: vehicle.created_at,
+          status: vehicle.status,
+          policyHolderId: vehicle.policyholder_id
+        }));
+        
+        // Update local storage with latest data
+        await AsyncStorage.setItem('userVehicles', JSON.stringify(formattedVehicles));
+        
+        return formattedVehicles;
+      }
+    } catch (supabaseError) {
+      console.warn('Supabase fetch failed, trying API fallback:', supabaseError);
+    }
+    
+    // Fallback to API if Supabase fails
+    try {
+      const headers = await getAuthHeader();
       
       const response = await axios.get(
-        `${API_URL}/vehicle/list`,
+        `${API_URL}/vehicle/list?policyholder_id=${policyHolderId}`,
         { headers }
       );
       
@@ -234,15 +261,20 @@ export const getUserVehicles = async (): Promise<VehicleInfo[]> => {
         return response.data.vehicles;
       }
     } catch (apiError) {
-      console.warn('Failed to fetch vehicles from API, using local data:', apiError);
+      console.warn('Failed to fetch vehicles from API:', apiError);
       // If API fails, return local data
-      return localVehicles;
+      const localVehiclesJson = await AsyncStorage.getItem('userVehicles');
+      return localVehiclesJson ? JSON.parse(localVehiclesJson) : [];
     }
     
-    return localVehicles;
+    // If all methods fail, return empty array
+    return [];
   } catch (error) {
     console.error('Get user vehicles error:', error);
-    throw error;
+    
+    // Return cached data from local storage as fallback
+    const localVehiclesJson = await AsyncStorage.getItem('userVehicles');
+    return localVehiclesJson ? JSON.parse(localVehiclesJson) : [];
   }
 };
 
@@ -251,7 +283,6 @@ export const getUserVehicles = async (): Promise<VehicleInfo[]> => {
  */
 export const getVehicleById = async (vehicleId: string): Promise<VehicleInfo | null> => {
   try {
-    await initApiUrl(); // Ensure API_URL is initialized
     // First check local storage
     const vehiclesJson = await AsyncStorage.getItem('userVehicles');
     const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];
@@ -261,10 +292,30 @@ export const getVehicleById = async (vehicleId: string): Promise<VehicleInfo | n
     // If found locally, return it
     if (localVehicle) return localVehicle;
     
-    // Otherwise fetch from API
-    const headers = await getAuthHeader();
+    // Try to get directly from Supabase
+    try {
+      const vehicle = await getVehicleFromSupabase(vehicleId);
+      
+      if (vehicle) {
+        return {
+          id: vehicle.vehicle_id,
+          plateNumber: vehicle.plate_number,
+          carMake: vehicle.car_make,
+          carModel: vehicle.car_model,
+          carYear: vehicle.car_year,
+          carImageUri: vehicle.car_image_url,
+          plateImageUri: vehicle.plate_image_url,
+          timestamp: vehicle.created_at,
+          status: vehicle.status,
+          policyHolderId: vehicle.policyholder_id
+        };
+      }
+    } catch (supabaseError) {
+      console.warn(`Supabase vehicle query error for ${vehicleId}:`, supabaseError);
+    }
     
-    console.log(`Getting vehicle by ID from API: ${API_URL}/vehicle/${vehicleId}`);
+    // Fallback to API if Supabase fails
+    const headers = await getAuthHeader();
     
     const response = await axios.get(
       `${API_URL}/vehicle/${vehicleId}`,
@@ -278,6 +329,151 @@ export const getVehicleById = async (vehicleId: string): Promise<VehicleInfo | n
     return null;
   } catch (error) {
     console.error(`Get vehicle ${vehicleId} error:`, error);
+    return null;
+  }
+};
+
+/**
+ * Service to update a vehicle
+ */
+export const updateVehicle = async (vehicleId: string, updates: Partial<VehicleInfo>): Promise<VehicleInfo | null> => {
+  try {
+    const headers = await getAuthHeader();
+    
+    // Prepare data for API request
+    const data: any = {};
+    
+    if (updates.plateNumber) data.plateNumber = updates.plateNumber;
+    if (updates.carMake) data.carMake = updates.carMake;
+    if (updates.carModel) data.carModel = updates.carModel;
+    if (updates.carYear) data.carYear = updates.carYear;
+    if (updates.status) data.status = updates.status;
+    
+    const response = await axios.put(
+      `${API_URL}/vehicle/${vehicleId}`,
+      data,
+      { headers }
+    );
+    
+    if (response.data && response.data.success && response.data.vehicle) {
+      // Update local storage
+      const vehiclesJson = await AsyncStorage.getItem('userVehicles');
+      const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];
+      
+      const updatedVehicles = vehicles.map((v: VehicleInfo) => 
+        v.id === vehicleId ? { ...v, ...response.data.vehicle } : v
+      );
+      
+      await AsyncStorage.setItem('userVehicles', JSON.stringify(updatedVehicles));
+      
+      return response.data.vehicle;
+    } else {
+      throw new Error(response.data?.error || 'Failed to update vehicle');
+    }
+  } catch (error) {
+    console.error(`Update vehicle ${vehicleId} error:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Service to update a vehicle's images
+ */
+export const updateVehicleImages = async (
+  vehicleId: string, 
+  carImageUri?: string, 
+  plateImageUri?: string
+): Promise<VehicleInfo | null> => {
+  try {
+    const headers = await getAuthHeader();
+    
+    const formData = new FormData();
+    
+    // Add car image if provided
+    if (carImageUri) {
+      const carFilename = carImageUri.split('/').pop() || 'car.jpg';
+      const carMatch = /\.(\w+)$/.exec(carFilename);
+      const carType = carMatch ? `image/${carMatch[1]}` : 'image/jpeg';
+      
+      formData.append('car_image', {
+        uri: carImageUri,
+        name: carFilename,
+        type: carType,
+      } as any);
+    }
+    
+    // Add plate image if provided
+    if (plateImageUri) {
+      const plateFilename = plateImageUri.split('/').pop() || 'plate.jpg';
+      const plateMatch = /\.(\w+)$/.exec(plateFilename);
+      const plateType = plateMatch ? `image/${plateMatch[1]}` : 'image/jpeg';
+      
+      formData.append('plate_image', {
+        uri: plateImageUri,
+        name: plateFilename,
+        type: plateType,
+      } as any);
+    }
+    
+    const response = await axios.put(
+      `${API_URL}/vehicle/${vehicleId}/images`,
+      formData,
+      {
+        headers: {
+          ...headers,
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    
+    if (response.data && response.data.success && response.data.vehicle) {
+      // Update local storage
+      const vehiclesJson = await AsyncStorage.getItem('userVehicles');
+      const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];
+      
+      const updatedVehicles = vehicles.map((v: VehicleInfo) => 
+        v.id === vehicleId ? { ...v, ...response.data.vehicle } : v
+      );
+      
+      await AsyncStorage.setItem('userVehicles', JSON.stringify(updatedVehicles));
+      
+      return response.data.vehicle;
+    } else {
+      throw new Error(response.data?.error || 'Failed to update vehicle images');
+    }
+  } catch (error) {
+    console.error(`Update vehicle images ${vehicleId} error:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Service to delete a vehicle
+ */
+export const deleteVehicle = async (vehicleId: string): Promise<boolean> => {
+  try {
+    const headers = await getAuthHeader();
+    
+    const response = await axios.delete(
+      `${API_URL}/vehicle/${vehicleId}`,
+      { headers }
+    );
+    
+    if (response.data && response.data.success) {
+      // Update local storage
+      const vehiclesJson = await AsyncStorage.getItem('userVehicles');
+      const vehicles = vehiclesJson ? JSON.parse(vehiclesJson) : [];
+      
+      const updatedVehicles = vehicles.filter((v: VehicleInfo) => v.id !== vehicleId);
+      
+      await AsyncStorage.setItem('userVehicles', JSON.stringify(updatedVehicles));
+      
+      return true;
+    } else {
+      throw new Error(response.data?.error || 'Failed to delete vehicle');
+    }
+  } catch (error) {
+    console.error(`Delete vehicle ${vehicleId} error:`, error);
     throw error;
   }
 };

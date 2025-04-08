@@ -124,8 +124,61 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-light">
       <ScrollView className="flex-1 p-6">
-        <Text className="text-primary text-2xl font-bold mb-2">Settings</Text>
-        <Text className="text-gray-600 mb-6">Configure application settings</Text>
+        <Text className="text-primary text-2xl font-bold mb-2">Network Settings</Text>
+        <Text className="text-gray-600 mb-6">Configure API server connection</Text>
+        
+        {/* Current Connection Info */}
+        <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
+          <Text className="text-primary font-bold text-lg mb-3">Connection Information</Text>
+          
+          <View className="bg-blue-50 p-3 rounded-lg mb-4">
+            <Text className="text-blue-800">
+              Connected to WiFi: {isConnected ? 'Yes' : 'No'}
+            </Text>
+            <Text className="text-blue-800">
+              Your Device IP: {deviceIP || 'Unknown'}
+            </Text>
+            <Text className="text-blue-800 mt-2">
+              Current API URL:
+            </Text>
+            <Text className="text-gray-700 p-2 bg-white rounded-lg mt-1 font-mono text-xs">
+              {apiUrl}
+            </Text>
+          </View>
+          
+          <Text className="text-primary font-bold mb-2">Server Connection</Text>
+          <Text className="text-gray-600 mb-3">
+            To connect to the backend server, enter the IP address of your computer running the Flask server.
+            Make sure both devices are on the same WiFi network.
+          </Text>
+          
+          <Text className="text-primary font-medium mb-2">New API URL</Text>
+          <TextInput
+            className="border border-gray-300 rounded-lg p-3 mb-4"
+            placeholder="http://192.168.1.100:5000"
+            value={newApiUrl}
+            onChangeText={setNewApiUrl}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+          
+          <View className="flex-row space-x-3">
+            <TouchableOpacity
+              onPress={handleUpdateApiUrl}
+              className="bg-secondary flex-1 p-3 rounded-lg items-center"
+            >
+              <Text className="text-white font-medium">Update API URL</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              onPress={handleResetApiUrl}
+              className="bg-primary flex-1 p-3 rounded-lg items-center"
+            >
+              <Text className="text-white font-medium">Reset to Default</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         
         {/* Developer Mode Toggle */}
         <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
@@ -143,56 +196,12 @@ export default function SettingsScreen() {
           
           {isDeveloperMode && (
             <>
-              <Text className="text-gray-600 mb-3">
-                Developer mode enables additional debugging features and settings.
-              </Text>
-              
-              <View className="h-px bg-gray-200 my-3" />
-              
-              <Text className="text-primary font-medium mb-2">Current API URL</Text>
-              <Text className="text-gray-700 p-3 bg-gray-100 rounded-lg mb-4 font-mono text-xs">
-                {apiUrl}
-              </Text>
-              
-              <Text className="text-primary font-medium mb-2">New API URL</Text>
-              <TextInput
-                className="border border-gray-300 rounded-lg p-3 mb-4"
-                placeholder="http://192.168.1.100:5000"
-                value={newApiUrl}
-                onChangeText={setNewApiUrl}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="url"
-              />
-              
-              <View className="flex-row space-x-3">
-                <TouchableOpacity
-                  onPress={handleUpdateApiUrl}
-                  className="bg-secondary flex-1 p-3 rounded-lg items-center"
-                >
-                  <Text className="text-white font-medium">Update API URL</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  onPress={handleResetApiUrl}
-                  className="bg-primary flex-1 p-3 rounded-lg items-center"
-                >
-                  <Text className="text-white font-medium">Reset to Default</Text>
-                </TouchableOpacity>
-              </View>
-              
               <Text className="text-gray-500 text-xs mt-3">
                 Note: For physical devices, use your computer's actual IP address on the same WiFi network as your mobile device.
               </Text>
               
               <View className="bg-blue-50 p-3 rounded-lg mt-4">
-                <Text className="text-blue-800 font-medium mb-1">Connection Information</Text>
-                <Text className="text-blue-800">
-                  Connected: {isConnected ? 'Yes' : 'No'}
-                </Text>
-                <Text className="text-blue-800">
-                  Your Device IP: {deviceIP || 'Unknown'}
-                </Text>
+                <Text className="text-blue-800 font-medium mb-1">Connection Troubleshooting</Text>
                 <Text className="text-blue-800 mt-2">
                   1. Make sure your computer and phone are on the same WiFi network
                 </Text>
@@ -202,19 +211,24 @@ export default function SettingsScreen() {
                 <Text className="text-blue-800">
                   3. Ensure the Flask server is running with HOST=0.0.0.0 in the .env file
                 </Text>
+                <Text className="text-blue-800">
+                  4. Check if your computer's firewall is allowing connections on port 5000
+                </Text>
+                <Text className="text-blue-800">
+                  5. Try pinging your computer from another device to verify connectivity
+                </Text>
               </View>
             </>
           )}
         </View>
         
-        {/* Application Information */}
-        <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
-          <Text className="text-primary font-bold text-lg mb-3">About TakaInsure</Text>
-          <Text className="text-gray-600 mb-1">Version: 1.0.0</Text>
-          <Text className="text-gray-600">
-            TakaInsure is a microinsurance solution leveraging AI, blockchain, and fintech to deliver affordable and transparent insurance.
-          </Text>
-        </View>
+        {/* Return to Dashboard Button */}
+        <TouchableOpacity
+          onPress={() => router.push('/home')}
+          className="bg-primary p-4 rounded-xl items-center mb-6"
+        >
+          <Text className="text-white font-bold">Return to Dashboard</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

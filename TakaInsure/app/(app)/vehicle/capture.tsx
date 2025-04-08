@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Alert, ScrollView } from 'react-native'; // Add ScrollView
+import { View, Text, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import VehicleForm from '../../../components/vehicle/VehicleForm';
@@ -20,7 +20,7 @@ export default function VehicleCaptureScreen() {
       // Show success message
       Alert.alert(
         'Vehicle Added',
-        'Your vehicle has been successfully registered and stored on the blockchain for secure record-keeping.',
+        'Your vehicle has been successfully registered and stored securely in our database.',
         [
           {
             text: 'View My Vehicles',
@@ -41,8 +41,9 @@ export default function VehicleCaptureScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-light">
-      <ScrollView className="flex-1"> {/* Wrap entire content in ScrollView */}
+      <ScrollView className="flex-1">
         <View className="p-6">
+          <Text className="text-primary text-2xl font-bold mb-2">Add New Vehicle</Text>
           <Text className="text-gray-600 mb-6">
             Provide your vehicle information for insurance coverage
           </Text>
@@ -56,7 +57,8 @@ export default function VehicleCaptureScreen() {
           <View className="bg-primary/10 rounded-xl p-4 mb-6">
             <Text className="text-primary font-medium">Vehicle Information Security</Text>
             <Text className="text-gray-700 mt-1">
-              Your vehicle details are securely stored on the blockchain, ensuring they cannot be altered or tampered with. This provides a transparent and reliable record for insurance purposes.
+              Your vehicle details are securely stored in our database with enterprise-grade protection.
+              This ensures your information remains confidential and can only be accessed by authorized personnel.
             </Text>
           </View>
         </View>

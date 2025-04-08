@@ -131,38 +131,19 @@ export default function VehicleDetailsScreen() {
           </View>
         </View>
 
-        {/* Blockchain Information */}
+        {/* Data Security Information */}
         <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
-          <Text className="text-primary font-bold text-lg mb-3">Blockchain Verification</Text>
+          <Text className="text-primary font-bold text-lg mb-3">Data Verification</Text>
           
-          {vehicle.blockchainReference ? (
-            <>
-              <View className="bg-green-100 px-3 py-2 rounded-lg mb-4">
-                <Text className="text-green-800">
-                  This vehicle's information is securely stored on the blockchain
-                </Text>
-              </View>
-              
-              <Text className="text-primary font-medium mb-1">Blockchain Reference</Text>
-              <Text className="text-gray-700 font-mono text-xs mb-3">{vehicle.blockchainReference}</Text>
-              
-              <TouchableOpacity 
-                className="bg-primary p-3 rounded-lg items-center"
-                onPress={() => Alert.alert(
-                  'Blockchain Verification',
-                  'This vehicle information is immutably stored on the blockchain, ensuring its authenticity and preventing unauthorized modifications.'
-                )}
-              >
-                <Text className="text-white font-medium">View Blockchain Details</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <View className="bg-yellow-100 px-3 py-2 rounded-lg mb-3">
-              <Text className="text-yellow-800">
-                This vehicle is pending blockchain verification
-              </Text>
-            </View>
-          )}
+          <View className="bg-green-100 px-3 py-2 rounded-lg mb-4">
+            <Text className="text-green-800">
+              This vehicle's information is securely stored in our database
+            </Text>
+          </View>
+          
+          <Text className="text-gray-700 mb-3">
+            Your vehicle data is protected with enterprise-grade security and can only be accessed by authorized personnel.
+          </Text>
         </View>
 
         {/* License Plate Image */}

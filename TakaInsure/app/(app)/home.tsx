@@ -60,6 +60,10 @@ export default function HomeScreen() {
     router.push('/profile');
   };
 
+  const handleSettings = () => {
+    router.push('settings');
+  };
+
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-light">
@@ -173,6 +177,24 @@ export default function HomeScreen() {
             <View>
               <Text className="text-primary text-lg font-bold">My Claims</Text>
               <Text className="text-gray-500">View your claim history and status</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Add Network Settings button in quick actions */}
+          <TouchableOpacity 
+            onPress={handleSettings}
+            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-blue-500"
+          >
+            <View className="bg-blue-100 p-4 rounded-lg mr-4">
+              <Image
+                source={require('../../assets/images/logo.png')}
+                className="w-8 h-8"
+                resizeMode="contain"
+              />
+            </View>
+            <View>
+              <Text className="text-primary text-lg font-bold">Network Settings</Text>
+              <Text className="text-gray-500">Configure API connection</Text>
             </View>
           </TouchableOpacity>
         </View>

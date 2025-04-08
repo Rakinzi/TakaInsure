@@ -95,6 +95,14 @@ export default function AppLayout() {
           headerShown: false,
         }}
       />
+
+      <Stack.Screen
+        name="settings"
+        options={{
+          title: 'Network Settings',
+          headerShown: true,
+        }}
+      />
     </Stack>
   );
 }

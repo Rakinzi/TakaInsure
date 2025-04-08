@@ -53,11 +53,9 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
         <View className="flex-1">
           <View className="flex-row justify-between mb-1">
             <Text className="text-primary font-bold text-lg">{vehicle.carMake} {vehicle.carModel}</Text>
-            {vehicle.blockchainReference && (
-              <View className="bg-green-100 px-2 py-0.5 rounded-full">
-                <Text className="text-green-800 text-xs font-medium">Verified</Text>
-              </View>
-            )}
+            <View className="bg-green-100 px-2 py-0.5 rounded-full">
+              <Text className="text-green-800 text-xs font-medium">Verified</Text>
+            </View>
           </View>
           
           <Text className="text-secondary font-bold">{vehicle.plateNumber}</Text>

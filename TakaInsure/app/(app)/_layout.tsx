@@ -49,50 +49,56 @@ export default function AppLayout() {
         name="claim/upload"
         options={{
           title: 'Upload Evidence',
+          presentation: 'modal',
         }}
       />
       <Stack.Screen
         name="claim/analysis"
         options={{
           title: 'Claim Analysis',
+          presentation: 'modal',
         }}
       />
       <Stack.Screen
         name="claim/recommendation"
         options={{
           title: 'Insurance Recommendation',
+          presentation: 'modal',
         }}
       />
       <Stack.Screen
         name="policy/index"
         options={{
           title: 'My Policies',
+          presentation: 'modal',
         }}
       />
       <Stack.Screen
         name="policy/details"
         options={{
           title: 'Policy Details',
+          presentation: 'modal',
         }}
       />
       <Stack.Screen
         name="policy/blockchain-details"
         options={{
           title: 'Blockchain Details',
+          presentation: 'modal',
         }}
       />
       <Stack.Screen
         name="profile"
         options={{
           title: 'My Profile',
-          headerShown: false,
+          presentation: 'modal',
         }}
       />
       <Stack.Screen
         name="vehicle"
         options={{
           title: 'My Vehicles',
-          headerShown: false,
+          presentation: 'modal',
         }}
       />
 
@@ -100,7 +106,7 @@ export default function AppLayout() {
         name="settings"
         options={{
           title: 'Network Settings',
-          headerShown: true,
+          presentation: 'modal',
         }}
       />
     </Stack>

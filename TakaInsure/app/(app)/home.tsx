@@ -185,13 +185,13 @@ export default function HomeScreen() {
         <View className="p-6">
           <Text className="text-primary text-xl font-bold mb-4">Account Summary</Text>
           
-          <View className="flex-row space-x-4 mb-6">
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
+          <View className="flex-row space-x-4 mb-6 ">
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center mr-4">
               <Text className="text-secondary text-2xl font-bold">{vehicleCount}</Text>
               <Text className="text-primary">Vehicles</Text>
             </View>
             
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center mr-4">
               <Text className="text-secondary text-2xl font-bold">{policyCount}</Text>
               <Text className="text-primary">Policies</Text>
             </View>
@@ -226,7 +226,7 @@ export default function HomeScreen() {
           
           <TouchableOpacity 
             onPress={handleViewPolicies}
-            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-tertiary"
+            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-black"
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
@@ -243,11 +243,11 @@ export default function HomeScreen() {
           
           <TouchableOpacity 
             onPress={handleViewVehicles}
-            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-green-500"
+            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-secondary"
           >
-            <View className="bg-green-100 p-4 rounded-lg mr-4">
+            <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/secured.png')}
+                source={require('../../assets/images/electric-car.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -278,11 +278,11 @@ export default function HomeScreen() {
           {/* Network Settings button in quick actions */}
           <TouchableOpacity 
             onPress={handleSettings}
-            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-blue-500"
+            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-secondary"
           >
-            <View className="bg-blue-100 p-4 rounded-lg mr-4">
+           <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/logo.png')}
+                source={require('../../assets/images/settings.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -294,8 +294,8 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Database Information */}
-        <View className="p-6 pt-0">
+        {/* Database Information  */}
+        {/* <View className="p-6 pt-0">
           <View className="bg-primary/10 p-4 rounded-xl mb-6">
             <Text className="text-primary font-bold mb-2">Secure Database Technology</Text>
             <Text className="text-gray-700 mb-3">
@@ -308,7 +308,7 @@ export default function HomeScreen() {
               <Text className="text-white font-semibold">View Your Policies</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
 
         {/* Information Section */}
         <View className="p-6 pt-0">

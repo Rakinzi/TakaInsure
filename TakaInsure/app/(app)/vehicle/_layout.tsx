@@ -7,7 +7,8 @@ export default function VehicleLayout() {
         name="index"
         options={{
           title: 'My Vehicles',
-          headerShown: true,
+          headerShown: false,
+          presentation: 'modal',
         }}
       />
       <Stack.Screen
@@ -15,6 +16,7 @@ export default function VehicleLayout() {
         options={{
           title: 'Add Vehicle',
           headerShown: true,
+          presentation: 'modal',
         }}
       />
       <Stack.Screen
@@ -22,6 +24,7 @@ export default function VehicleLayout() {
         options={{
           title: 'Vehicle Details',
           headerShown: true,
+          presentation: 'modal',
         }}
       />
     </Stack>

@@ -119,7 +119,7 @@ const uploadImageToStorage = async (imageUri: string, folder: string, filename: 
     
     const fileExt = imageUri.split('.').pop() || 'jpg';
     const filePath = `${folder}/${filename}.${fileExt}`;
-    
+    console.log(filePath)
     const { data, error } = await supabase
       .storage
       .from('takainsure')

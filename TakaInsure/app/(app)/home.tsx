@@ -108,7 +108,7 @@ export default function HomeScreen() {
             </View>
             <TouchableOpacity onPress={handleProfile} className="bg-white p-2 rounded-full">
               <Image
-                source={require('../../../assets/images/logo.png')}
+                source={require('../../assets/images/logo.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -153,7 +153,7 @@ export default function HomeScreen() {
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../../assets/images/claim.png')}
+                source={require('../../assets/images/claim.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -170,7 +170,7 @@ export default function HomeScreen() {
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../../assets/images/compliant.png')}
+                source={require('../../assets/images/compliant.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -187,7 +187,7 @@ export default function HomeScreen() {
           >
             <View className="bg-green-100 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../../assets/images/secured.png')}
+                source={require('../../assets/images/secured.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -204,7 +204,7 @@ export default function HomeScreen() {
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../../assets/images/secured.png')}
+                source={require('../../assets/images/secured.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -222,7 +222,7 @@ export default function HomeScreen() {
           >
             <View className="bg-blue-100 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../../assets/images/logo.png')}
+                source={require('../../assets/images/logo.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />

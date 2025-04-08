@@ -104,6 +104,7 @@ export const authenticatePolicyholder = async (
             ['userData', JSON.stringify(data)], // Store all user data for use in the app
         ]);
 
+        console.log('Authentication successful:', data);
         return {
             success: true,
             token,

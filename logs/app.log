@@ -1285,3 +1285,310 @@ werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on 
 2025-04-07 23:00:29 [INFO] __init__ - create_app: Application initialized successfully
 2025-04-07 23:00:29 [INFO] app - <module>: Starting application on port 5000 with debug=True
 2025-04-07 23:00:29 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 19:38:42 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 19:38:42 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 19:38:42 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 19:38:52 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 19:38:54 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 19:38:54 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 19:38:54 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 19:38:54 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 19:39:00 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 19:39:02 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 19:39:02 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 19:39:02 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 19:39:02 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 19:39:02 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 19:39:02 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 19:39:07 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 19:39:07 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 19:39:08 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 19:39:08 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 19:39:08 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 19:39:08 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 19:39:09 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 19:39:09 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 19:39:10 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 19:39:10 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 19:39:10 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 19:39:12 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 19:39:12 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 19:39:12 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 19:39:15 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 19:39:15 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 19:39:15 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 19:39:15 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 19:39:15 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 19:39:17 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 19:39:17 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 19:39:17 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 19:39:17 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 19:39:17 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 19:39:17 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 19:39:17 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 19:39:19 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 19:39:19 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 19:39:20 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 19:39:20 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 19:39:20 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 19:39:20 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 19:39:21 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 19:39:22 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 19:39:23 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 19:39:23 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 19:39:23 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 19:39:23 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 20:45:56 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 20:45:56 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 20:45:56 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 20:46:08 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 20:46:09 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 20:46:09 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 20:46:09 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 20:46:09 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 20:46:15 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 20:46:17 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 20:46:17 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 20:46:17 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 20:46:17 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 20:46:17 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 20:46:17 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 20:46:22 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 20:46:22 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 20:46:25 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 20:46:25 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 20:46:25 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 20:46:25 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 20:46:27 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 20:46:27 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 20:46:29 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 20:46:29 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 20:46:29 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 20:46:29 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 21:17:18 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 21:17:18 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 21:17:18 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 21:17:38 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 21:17:40 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:17:40 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:17:40 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:17:40 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:17:49 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 21:17:51 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 21:17:51 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:17:52 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 21:17:52 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 21:17:52 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:17:52 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 21:17:58 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 21:17:58 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 21:18:01 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 21:18:02 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 21:18:02 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 21:18:02 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 21:18:05 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 21:18:06 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 21:18:08 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 21:18:08 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 21:18:08 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 21:18:08 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 21:18:55 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 21:18:55 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 21:18:55 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 21:19:05 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 21:19:07 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:19:07 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:19:07 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:19:07 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:19:13 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 21:19:15 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 21:19:15 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:19:15 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 21:19:15 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 21:19:15 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:19:15 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 21:19:20 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 21:19:20 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 21:19:24 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 21:19:24 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 21:19:24 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 21:19:24 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 21:19:27 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 21:19:28 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 21:19:32 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 21:19:32 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 21:19:32 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 21:19:32 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 21:19:43 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 21:19:44 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 21:19:44 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 21:19:51 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 21:19:52 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:19:52 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:19:52 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:19:52 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:19:57 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 21:19:59 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 21:19:59 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:19:59 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 21:19:59 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 21:19:59 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:19:59 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 21:20:03 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 21:20:03 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 21:20:05 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 21:20:06 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 21:20:06 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 21:20:06 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 21:20:07 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 21:20:07 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 21:20:09 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 21:20:09 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 21:20:09 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 21:20:09 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 21:20:25 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 21:20:25 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 21:20:25 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 21:20:34 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 21:20:36 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:20:36 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:20:36 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:20:36 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:20:41 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 21:20:42 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 21:20:42 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:20:42 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 21:20:42 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 21:20:42 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:20:43 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 21:20:47 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 21:20:47 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 21:20:49 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 21:20:50 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 21:20:50 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 21:20:50 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 21:20:52 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 21:20:53 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 21:20:54 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 21:20:54 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 21:20:54 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 21:20:54 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 21:21:10 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 21:21:10 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 21:21:10 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 21:21:17 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 21:21:19 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:21:19 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:21:19 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:21:19 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:21:25 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 21:21:26 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 21:21:26 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:21:26 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 21:21:26 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 21:21:27 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:21:27 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 21:21:31 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 21:21:31 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 21:21:33 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 21:21:34 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 21:21:34 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 21:21:34 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 21:21:35 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 21:21:36 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 21:21:37 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 21:21:37 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 21:21:37 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 21:21:37 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 21:22:14 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 21:22:14 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 21:22:14 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 21:22:21 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 21:22:22 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:22:22 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:22:22 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:22:22 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:22:25 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 21:22:26 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 21:22:26 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:22:26 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 21:22:26 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 21:22:27 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:22:27 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 21:22:32 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 21:22:32 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 21:22:34 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 21:22:34 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 21:22:34 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 21:22:34 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 21:22:35 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 21:22:35 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 21:22:37 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 21:22:37 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 21:22:37 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 21:22:37 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 21:26:20 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 21:26:20 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 21:26:20 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 21:26:28 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 21:26:30 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:26:30 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:26:30 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:26:30 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:26:35 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 21:26:36 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 21:26:36 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:26:36 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 21:26:36 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 21:26:36 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:26:36 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 21:26:41 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 21:26:41 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 21:26:43 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 21:26:44 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 21:26:44 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 21:26:44 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 21:26:46 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 21:26:46 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 21:26:48 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 21:26:48 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 21:26:48 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 21:26:48 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 21:34:50 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 21:34:50 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 21:34:50 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 21:34:59 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 21:35:00 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:35:00 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:35:00 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 21:35:00 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 21:35:05 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 21:35:06 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 21:35:06 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:35:06 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 21:35:06 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 21:35:06 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 21:35:06 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 21:35:11 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 21:35:11 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 21:35:14 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 21:35:15 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 21:35:15 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 21:35:15 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 21:35:17 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 21:35:18 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 21:35:20 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 21:35:20 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 21:35:20 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 21:35:20 [WARNING] _internal - _log:  * Debugger is active!

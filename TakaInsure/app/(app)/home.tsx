@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,6 +24,7 @@ type UserData = {
 export default function HomeScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [vehicleCount, setVehicleCount] = useState(0);
   const [policyCount, setPolicyCount] = useState(0);
@@ -46,14 +47,14 @@ export default function HomeScreen() {
   const loadUserData = async () => {
     try {
       setLoading(true);
-      
+
       // Get user data from AsyncStorage
       const userDataStr = await AsyncStorage.getItem('userData');
-      
+
       if (userDataStr) {
         const parsedUserData = JSON.parse(userDataStr);
         setUserData(parsedUserData);
-        
+
         // Now we have the user data, let's fetch their other information
         await Promise.all([
           fetchVehicles(parsedUserData.policyholder_id),
@@ -64,16 +65,16 @@ export default function HomeScreen() {
         // Try to construct minimal user data from individual storage items
         const policyHolderId = await AsyncStorage.getItem('policyHolderId');
         const phoneNumber = await AsyncStorage.getItem('phoneNumber');
-        
+
         if (policyHolderId && phoneNumber) {
           const minimalUserData = {
             policyholder_id: policyHolderId,
             full_name: 'User', // Default name
             contact_details: phoneNumber,
           };
-          
+
           setUserData(minimalUserData);
-          
+
           // Use the minimal user data to fetch other information
           await Promise.all([
             fetchVehicles(policyHolderId),
@@ -92,46 +93,72 @@ export default function HomeScreen() {
       setLoading(false);
     }
   };
-  
+
+  // Add refresh functionality
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // Reload all data
+      await loadUserData();
+      
+      // After user data is loaded, check for daily payment
+      if (userData) {
+        await checkDailyPayment();
+      }
+      
+      // Show refresh feedback to user
+      console.log('Data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      Alert.alert('Refresh Failed', 'Unable to refresh your data. Please try again.');
+    } finally {
+      setRefreshing(false);
+    }
+  }, [userData]);
+
   const checkDailyPayment = async () => {
     try {
       // Check if daily payment is needed
       const paymentNeeded = await checkDailyPremiumPayment();
-      
+
       if (paymentNeeded) {
         console.log('Daily premium payment is needed');
-        
+
         // Calculate the daily premium amount
         // In a real app, this would come from the backend
         // For this demo, we'll get active policies and calculate it
-        
+
         const { data: policies } = await supabase
           .from('policy')
           .select('premium_amount')
           .eq('policyholder_id', userData?.policyholder_id)
           .eq('status', 'active');
-          
+
         if (policies && policies.length > 0) {
           // Calculate total monthly premium
           const totalMonthlyPremium = policies.reduce(
-            (sum, policy) => sum + (policy.premium_amount || 0), 
+            (sum, policy) => sum + (policy.premium_amount || 0),
             0
           );
-          
+
           // Calculate daily amount (monthly amount / 30 days)
           const dailyAmount = totalMonthlyPremium / 30;
-          
+
           // Set state
           setDailyPremiumAmount(Math.round(dailyAmount * 100) / 100);
           setPaymentDue(true);
           setShowPaymentModal(true);
         }
+      } else {
+        // Reset payment due state if no payment is needed
+        // This ensures that after a successful payment and refresh, the banner disappears
+        setPaymentDue(false);
       }
     } catch (error) {
       console.error('Error checking daily payment:', error);
     }
   };
-  
+
   const handlePaymentSuccess = () => {
     setPaymentDue(false);
     // Optionally show a success message or update UI
@@ -180,7 +207,7 @@ export default function HomeScreen() {
   const handleNewClaim = () => {
     router.push('/claim/new');
   };
-  
+
   const handleViewPolicies = () => {
     router.push('/policy');
   };
@@ -200,14 +227,31 @@ export default function HomeScreen() {
   const handleViewClaims = () => {
     router.push('/claim/list');
   };
-  
+
   const handleViewPayments = () => {
     router.push('/payments');
   };
 
   return (
     <SafeAreaView className="flex-1 bg-light">
-      <ScrollView className="flex-1">
+      <ScrollView 
+        className="flex-1"
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={['#2962ff']} // Use your primary color here
+            tintColor={'#2962ff'} // For iOS
+          />
+        }
+      >
+        {/* Loading indicator */}
+        {loading && !refreshing && (
+          <View className="absolute w-full h-full items-center justify-center bg-black/10 z-10">
+            <ActivityIndicator size="large" color="#2962ff" />
+          </View>
+        )}
+
         {/* Header Section */}
         <View className="bg-primary p-6 rounded-b-3xl shadow-md">
           <View className="flex-row justify-between items-center mb-6">
@@ -223,7 +267,7 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
           </View>
-          
+
           <View className="bg-light p-4 rounded-xl">
             <Text className="text-primary font-bold mb-1">Policy Holder ID</Text>
             <Text className="text-secondary text-lg">{userData?.policyholder_id || 'Not available'}</Text>
@@ -232,7 +276,7 @@ export default function HomeScreen() {
 
         {/* Payment Due Banner (if payment is due) */}
         {paymentDue && (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setShowPaymentModal(true)}
             className="mx-6 mt-4 bg-yellow-100 p-4 rounded-xl border border-yellow-300"
           >
@@ -249,32 +293,38 @@ export default function HomeScreen() {
         {/* Stats Section */}
         <View className="p-6">
           <Text className="text-primary text-xl font-bold mb-4">Account Summary</Text>
-          
+
           <View className="flex-row space-x-4 mb-6 ">
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center mr-4">
+            <TouchableOpacity
+              onLongPress={() => Speech.speak("You have " + vehicleCount + " vehicles registered")}
+              className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center mr-4">
               <Text className="text-secondary text-2xl font-bold">{vehicleCount}</Text>
               <Text className="text-primary">Vehicles</Text>
-            </View>
-            
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center mr-4">
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onLongPress={() => Speech.speak("You have " + policyCount + " policies registered")}
+              className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center mr-4">
               <Text className="text-secondary text-2xl font-bold">{policyCount}</Text>
               <Text className="text-primary">Policies</Text>
-            </View>
-            
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
+            </TouchableOpacity>
+
+            <TouchableOpacity
+            onLongPress={()=> Speech.speak("You have " + claimCount + " claims registered")}
+            className="flex-1 bg-white p-4 rounded-xl shadow-sm items-center">
               <Text className="text-secondary text-2xl font-bold">{claimCount}</Text>
               <Text className="text-primary">Claims</Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Quick Actions */}
         <View className="p-6 pt-0">
           <Text className="text-primary text-xl font-bold mb-4">Quick Actions</Text>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             onPress={handleNewClaim}
-            onLongPress={()=> Speech.speak("File New")}
+            onLongPress={() => Speech.speak("File New Claim. Upload evidence and get instant analysis")}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-secondary"
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
@@ -289,9 +339,10 @@ export default function HomeScreen() {
               <Text className="text-gray-500">Upload evidence and get instant analysis</Text>
             </View>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             onPress={handleViewPolicies}
+            onLongPress={() => Speech.speak("My Policies. View your secured database policies")}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-black"
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
@@ -306,9 +357,10 @@ export default function HomeScreen() {
               <Text className="text-gray-500">View your secured database policies</Text>
             </View>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             onPress={handleViewVehicles}
+            onLongPress={() => Speech.speak("My Vehicles. Manage your registered vehicles")}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-secondary"
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
@@ -323,9 +375,10 @@ export default function HomeScreen() {
               <Text className="text-gray-500">Manage your registered vehicles</Text>
             </View>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             onPress={handleViewClaims}
+            onLongPress={() => Speech.speak("My Claims. View your claim history and status")}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-primary"
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
@@ -342,11 +395,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {/* Payment History */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleViewPayments}
+            onLongPress={() => Speech.speak("Payment History. Track your premium payments")}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-secondary"
           >
-           <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
+            <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
                 source={require('../../assets/images/transactionshistory.png')}
                 className="w-8 h-8"
@@ -360,11 +414,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {/* Network Settings button in quick actions */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleSettings}
+            onLongPress={() => Speech.speak("Network Settings. Configure API connection")}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-black"
           >
-           <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
+            <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
                 source={require('../../assets/images/settings.png')}
                 className="w-8 h-8"
@@ -381,7 +436,7 @@ export default function HomeScreen() {
         {/* Information Section */}
         <View className="p-6 pt-0">
           <Text className="text-primary text-xl font-bold mb-4">Information</Text>
-          
+
           <View className="bg-secondary/10 p-4 rounded-xl mb-6">
             <Text className="text-primary font-bold mb-2">Need Help?</Text>
             <Text className="text-gray-700 mb-3">
@@ -391,7 +446,7 @@ export default function HomeScreen() {
               <Text className="text-white font-semibold">Contact Support</Text>
             </TouchableOpacity>
           </View>
-          
+
           <TouchableOpacity
             onPress={handleLogout}
             className="bg-tertiary/20 p-4 rounded-xl items-center"

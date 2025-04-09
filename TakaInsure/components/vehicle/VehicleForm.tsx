@@ -139,7 +139,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       
       {carMake && carModel && (
         <View className="mt-1 mb-4 p-3 bg-green-50 rounded-lg">
-          <Text className="text-green-800 font-medium">Detected Vehicle:</Text>
+          <Text className="text-green-800 font-medium mb-1">Detected Vehicle:</Text>
           <Text className="text-green-800">Make: {carMake}</Text>
           <Text className="text-green-800">Model: {carModel}</Text>
           {carYear && <Text className="text-green-800">Year: {carYear}</Text>}

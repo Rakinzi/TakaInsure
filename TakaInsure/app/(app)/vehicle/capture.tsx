@@ -12,11 +12,12 @@ export default function VehicleCaptureScreen() {
 
   const handleSubmit = async (vehicleData: VehicleInfo) => {
     setLoading(true);
+    console.log('Submitting vehicle data:', vehicleData);
    
     try {
       // Register the vehicle
-      console.log(vehicleData)
-      await registerVehicle(vehicleData);
+      const vehicleId = await registerVehicle(vehicleData);
+      console.log('Vehicle registered with ID:', vehicleId);
      
       // Show success message
       Alert.alert(

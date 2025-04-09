@@ -9,6 +9,9 @@ import { getUserVehicles } from '../../services/vehicleService';
 import { getUserClaims } from '../../services/claimService';
 import { checkDailyPremiumPayment } from '../../services/paymentService';
 import PremiumPaymentModal from '../../components/payment/PremiumPaymentModal';
+import * as Speech from 'expo-speech';
+
+
 
 type UserData = {
   full_name: string;
@@ -271,6 +274,7 @@ export default function HomeScreen() {
           
           <TouchableOpacity 
             onPress={handleNewClaim}
+            onLongPress={()=> Speech.speak("File New")}
             className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-secondary"
           >
             <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
@@ -344,7 +348,7 @@ export default function HomeScreen() {
           >
            <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image
-                source={require('../../assets/images/settings.png')}
+                source={require('../../assets/images/transactionshistory.png')}
                 className="w-8 h-8"
                 resizeMode="contain"
               />
@@ -358,7 +362,7 @@ export default function HomeScreen() {
           {/* Network Settings button in quick actions */}
           <TouchableOpacity 
             onPress={handleSettings}
-            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-secondary"
+            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-black"
           >
            <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
               <Image

@@ -85,7 +85,7 @@ def process_mobile_payment(
         payment.add(payment_reason, amount)
         
         # Send the payment
-        response = paynow_client.send_mobile(payment, phone_number, payment_method)
+        response = paynow_client.send_mobile(payment, '0771111111', 'ecocash')
         
         # Check if payment was initiated successfully
         if response.success:

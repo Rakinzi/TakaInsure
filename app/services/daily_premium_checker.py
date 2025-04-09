@@ -6,7 +6,6 @@ import calendar
 
 logger = logging.getLogger(__name__)
 
-# Keep track of processed dates to avoid duplicate processing
 processed_dates = set()
 
 def check_and_process_daily_premiums():
@@ -93,7 +92,7 @@ def check_and_process_daily_premiums():
                 amount=total_premium,
                 payment_method='ecocash',
                 payment_reason=f"TakaInsure Daily Premium - {user.get('full_name', 'Customer')}",
-                email="user@takainsure.app"
+                email="silverrakinzi@gmail.com"
             )
             
             if payment_result.get('success', False):

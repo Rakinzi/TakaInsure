@@ -54,10 +54,10 @@ def process_premium_payment(policy_holder_id, amount):
             }
         
         # Create payment - Use EXACT format from test.py, only changing amount
-        payment = paynow.create_payment('Order', 'silverrakinzi@gmail.com')
+        payment = paynow.create_payment('Daily Premium', 'silverrakinzi@gmail.com')
         
         # Add payment details - Use EXACT description from test.py, only changing amount
-        payment.add('Payment for stuff', float(amount))
+        payment.add('Premium', float(amount))
         
         # Process mobile payment - Use EXACT values from test.py
         response = paynow.send_mobile(payment, '0771111111', 'ecocash')

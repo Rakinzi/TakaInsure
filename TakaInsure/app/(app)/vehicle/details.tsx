@@ -4,12 +4,15 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getVehicleById } from '../../../services/vehicleService';
 import { VehicleInfo } from '../../../types/vehicle';
+import { getApiUrl } from '../../../services/networkService';
 
 export default function VehicleDetailsScreen() {
   const router = useRouter();
   const { vehicleId } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [vehicle, setVehicle] = useState<VehicleInfo | null>(null);
+  const [carImageUri, setCarImageUri] = useState<string | null>(null);
+  const [plateImageUri, setPlateImageUri] = useState<string | null>(null);
 
   useEffect(() => {
     if (vehicleId) {
@@ -22,6 +25,10 @@ export default function VehicleDetailsScreen() {
       setLoading(true);
       const vehicleData = await getVehicleById(id);
       setVehicle(vehicleData);
+      
+      if (vehicleData) {
+        await loadImageUrls(vehicleData);
+      }
     } catch (error) {
       console.error('Error loading vehicle details:', error);
       Alert.alert(
@@ -30,6 +37,37 @@ export default function VehicleDetailsScreen() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const loadImageUrls = async (vehicleData: VehicleInfo) => {
+    try {
+      const apiUrl = await getApiUrl();
+      const baseUrl = apiUrl.includes('/api') ? apiUrl.split('/api')[0] : apiUrl;
+      
+      // Process car image URL
+      if (vehicleData.carImageUri) {
+        if (vehicleData.carImageUri.startsWith('http')) {
+          setCarImageUri(vehicleData.carImageUri);
+        } else if (vehicleData.carImageUri.startsWith('/api')) {
+          setCarImageUri(`${baseUrl}${vehicleData.carImageUri}`);
+        } else {
+          setCarImageUri(`${apiUrl}/vehicle/image/${vehicleData.id}/car`);
+        }
+      }
+      
+      // Process plate image URL
+      if (vehicleData.plateImageUri) {
+        if (vehicleData.plateImageUri.startsWith('http')) {
+          setPlateImageUri(vehicleData.plateImageUri);
+        } else if (vehicleData.plateImageUri.startsWith('/api')) {
+          setPlateImageUri(`${baseUrl}${vehicleData.plateImageUri}`);
+        } else {
+          setPlateImageUri(`${apiUrl}/vehicle/image/${vehicleData.id}/plate`);
+        }
+      }
+    } catch (error) {
+      console.error('Error processing image URLs:', error);
     }
   };
 
@@ -83,12 +121,16 @@ export default function VehicleDetailsScreen() {
         </Text>
 
         {/* Vehicle Image */}
-        {vehicle.carImageUri ? (
+        {carImageUri ? (
           <View className="mb-6">
             <Image
-              source={{ uri: vehicle.carImageUri }}
+              source={{ uri: carImageUri }}
               className="w-full h-48 rounded-xl"
               resizeMode="cover"
+              onError={() => {
+                console.log('Failed to load car image:', carImageUri);
+                setCarImageUri(null);
+              }}
             />
           </View>
         ) : (
@@ -147,13 +189,17 @@ export default function VehicleDetailsScreen() {
         </View>
 
         {/* License Plate Image */}
-        {vehicle.plateImageUri && (
+        {plateImageUri && (
           <View className="bg-white rounded-xl p-5 shadow-sm mb-6">
             <Text className="text-primary font-bold text-lg mb-3">License Plate Image</Text>
             <Image
-              source={{ uri: vehicle.plateImageUri }}
+              source={{ uri: plateImageUri }}
               className="w-full h-32 rounded-lg"
               resizeMode="cover"
+              onError={() => {
+                console.log('Failed to load plate image:', plateImageUri);
+                setPlateImageUri(null);
+              }}
             />
           </View>
         )}

@@ -3,7 +3,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabaseClient';
 import { getApiUrl } from './networkService';
-import * as uuid from 'uuid';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  * Creates a form data object from an image URI
@@ -131,7 +132,7 @@ export const uploadImageToServer = async (
     const fileExt = match ? match[1] : 'jpg';
     
     // Generate a unique ID
-    const imageId = uuid.v4();
+    const imageId = uuidv4();
     
     // Append the file
     formData.append('file', {

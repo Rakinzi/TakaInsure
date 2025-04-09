@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { VehicleInfo } from '../../types/vehicle';
+import { getApiUrl } from '../../services/networkService';
 
 interface VehicleCardProps {
   vehicle: VehicleInfo;
@@ -13,6 +14,34 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
   showActions = true 
 }) => {
   const router = useRouter();
+  const [carImageUri, setCarImageUri] = useState<string | null>(null);
+  
+  useEffect(() => {
+    loadImageUrl();
+  }, [vehicle]);
+  
+  const loadImageUrl = async () => {
+    if (!vehicle.carImageUri) return;
+    
+    try {
+      const apiUrl = await getApiUrl();
+      // If the image path is already a full URL, use it directly
+      if (vehicle.carImageUri.startsWith('http')) {
+        setCarImageUri(vehicle.carImageUri);
+      } 
+      // If the image path starts with /api, combine it with the base URL
+      else if (vehicle.carImageUri.startsWith('/api')) {
+        const baseUrl = apiUrl.includes('/api') ? apiUrl.split('/api')[0] : apiUrl;
+        setCarImageUri(`${baseUrl}${vehicle.carImageUri}`);
+      }
+      // Otherwise, assume it's a relative path that needs the full API URL
+      else {
+        setCarImageUri(`${apiUrl}/vehicle/image/${vehicle.id}/${vehicle.carImageUri}`);
+      }
+    } catch (error) {
+      console.error('Error loading image URL:', error);
+    }
+  };
   
   const handleViewDetails = () => {
     router.push({
@@ -38,11 +67,12 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
       onPress={handleViewDetails}
     >
       <View className="flex-row">
-        {vehicle.carImageUri ? (
+        {carImageUri ? (
           <Image
-            source={{ uri: vehicle.carImageUri }}
+            source={{ uri: carImageUri }}
             className="w-24 h-24 rounded-lg mr-4"
             resizeMode="cover"
+            onError={() => setCarImageUri(null)}
           />
         ) : (
           <View className="w-24 h-24 bg-gray-200 rounded-lg mr-4 items-center justify-center">

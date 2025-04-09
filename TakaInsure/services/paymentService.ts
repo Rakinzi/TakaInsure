@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getApiUrl } from './networkService';
 import axios from 'axios';
+import { getApiUrl } from './networkService';
 import { supabase } from './supabaseClient';
 import { formatZimbabwePhone } from './supabaseAuth';
 
@@ -46,7 +46,7 @@ export const checkDailyPremiumPayment = async (): Promise<boolean> => {
 };
 
 /**
- * Process daily premium payment for all active policies
+ * Process daily premium payment for all active policies using the payment API
  */
 export const processDailyPremiumPayment = async (): Promise<PremiumPaymentResult> => {
   try {
@@ -103,53 +103,52 @@ export const processDailyPremiumPayment = async (): Promise<PremiumPaymentResult
     
     // Get the user's phone number and format it
     const phoneNumber = formatZimbabwePhone(user.contact_details);
+    const formattedPhone = phoneNumber.replace('+', ''); // Remove + from the phone number
     
-    // Make the payment
-    const result = await processPaynowPayment(
-      amount,
-      phoneNumber.replace('+', ''), // Remove + from the phone number
-      'Daily Premium Payment',
-      policies[0].policy_id // Reference the first policy ID
+    // Get API URL for payment processing
+    const API_URL = await getApiUrl();
+    
+    // Make the payment using the payment API
+    const paymentData = {
+      amount: amount,
+      phoneNumber: formattedPhone,
+      description: 'Daily Premium Payment',
+      reference: `daily_premium_${new Date().toISOString().split('T')[0]}`,
+      username: user.full_name || 'User',
+      policyId: policies[0].policy_id // Reference the first policy ID
+    };
+    
+    console.log(`Processing payment via ${API_URL}/payment/process`, paymentData);
+    
+    const response = await axios.post(
+      `${API_URL}/payment/process`,
+      paymentData
     );
     
-    if (result.success) {
+    if (response.data && response.data.success) {
       // Update the last payment date
       const today = new Date().toISOString().split('T')[0];
       await AsyncStorage.setItem('lastPremiumPaymentDate', today);
       
-      // Record the payment in Supabase for each policy
-      for (const policy of policies) {
-        // Calculate daily premium for this policy
-        const currentDate = new Date();
-        const daysInMonth = new Date(
-          currentDate.getFullYear(),
-          currentDate.getMonth() + 1,
-          0
-        ).getDate();
-        
-        const dailyPremium = policy.premium_amount / daysInMonth;
-        const policyDailyAmount = Math.round(dailyPremium * 100) / 100;
-        
-        // Save payment record
-        const { data: paymentRecord, error: paymentError } = await supabase
-          .from('policy_payments')
-          .insert([{
-            policy_id: policy.policy_id,
-            amount: policyDailyAmount,
-            payment_date: new Date().toISOString(),
-            payment_method: 'ecocash',
-            transaction_reference: result.transactionRef || `daily_${Date.now()}`,
-            status: 'completed'
-          }])
-          .select();
-          
-        if (paymentError) {
-          console.error('Error recording payment:', paymentError);
+      return {
+        success: true,
+        transactionRef: response.data.transactionReference,
+        payment: {
+          payment_id: response.data.transactionReference,
+          policy_id: policies[0].policy_id,
+          amount: parseFloat(amount),
+          payment_date: new Date().toISOString(),
+          payment_method: 'ecocash',
+          transaction_reference: response.data.transactionReference,
+          status: 'pending' // Initial status is pending until confirmed
         }
-      }
+      };
+    } else {
+      return {
+        success: false,
+        error: response.data?.error || 'Payment processing failed'
+      };
     }
-    
-    return result;
   } catch (error) {
     console.error('Error processing daily premium payment:', error);
     return { success: false, error: 'Failed to process payment' };
@@ -157,58 +156,97 @@ export const processDailyPremiumPayment = async (): Promise<PremiumPaymentResult
 };
 
 /**
- * Process a payment using Paynow gateway
+ * Process a payment using the payment API
  */
-export const processPaynowPayment = async (
+export const processPayment = async (
   amount: string, 
-  phoneNumber: string,
   description: string = 'Insurance Premium',
-  referenceId: string = ''
+  policyId: string = '',
+  referencePrefix: string = 'payment'
 ): Promise<PremiumPaymentResult> => {
   try {
-    // In a real app, we'd call the backend API to process the payment
+    // Get user data
+    const userData = await AsyncStorage.getItem('userData');
+    if (!userData) {
+      return { success: false, error: 'User data not available' };
+    }
+    
+    const user = JSON.parse(userData);
+    const phoneNumber = formatZimbabwePhone(user.contact_details);
+    const formattedPhone = phoneNumber.replace('+', ''); // Remove + from the phone number
+    
+    // Generate a reference with timestamp
+    const reference = `${referencePrefix}_${Date.now()}`;
+    
+    // Get API URL
     const API_URL = await getApiUrl();
     
-    // For demo purposes, we'll simulate a successful payment
-    // In a real app, this would call:
-    // const response = await axios.post(`${API_URL}/payment/process`, {
-    //   amount,
-    //   phoneNumber,
-    //   description,
-    //   referenceId
-    // });
-    
-    console.log(`[SIMULATED] Processing payment of $${amount} to ${phoneNumber} for "${description}"`);
-
-    // Generate a transaction reference
-    const transactionRef = `paynow_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-    
-    // Simulate the API response
-    const simulatedResponse = {
-      success: true,
-      message: 'Payment successful',
-      transactionRef,
+    // Prepare payment data
+    const paymentData = {
       amount,
-      phoneNumber,
-      timestamp: new Date().toISOString()
+      phoneNumber: formattedPhone,
+      description,
+      reference,
+      username: user.full_name || 'User',
+      policyId: policyId || undefined
     };
     
-    return { 
-      success: true, 
-      transactionRef,
-      payment: {
-        payment_id: transactionRef,
-        policy_id: referenceId,
-        amount: parseFloat(amount),
-        payment_date: new Date().toISOString(),
-        payment_method: 'ecocash',
-        transaction_reference: transactionRef,
-        status: 'completed'
-      }
-    };
+    console.log(`Processing payment via ${API_URL}/payment/process`, paymentData);
+    
+    // Call the payment API
+    const response = await axios.post(
+      `${API_URL}/payment/process`,
+      paymentData
+    );
+    
+    if (response.data && response.data.success) {
+      // Update the last payment date in AsyncStorage
+      const today = new Date().toISOString().split('T')[0];
+      await AsyncStorage.setItem('lastPremiumPaymentDate', today);
+      
+      return {
+        success: true,
+        transactionRef: response.data.transactionReference,
+        payment: {
+          payment_id: response.data.transactionReference,
+          policy_id: policyId,
+          amount: parseFloat(amount),
+          payment_date: new Date().toISOString(),
+          payment_method: 'ecocash',
+          transaction_reference: response.data.transactionReference,
+          status: 'pending'
+        }
+      };
+    } else {
+      return {
+        success: false,
+        error: response.data?.error || 'Payment processing failed'
+      };
+    }
   } catch (error) {
     console.error('Payment processing error:', error);
     return { success: false, error: 'Failed to process payment' };
+  }
+};
+
+/**
+ * Make a payment for a new claim
+ */
+export const processClaimPayment = async (
+  claimId: string,
+  policyId: string,
+  amount: string
+): Promise<PremiumPaymentResult> => {
+  try {
+    return await processPayment(
+      amount,
+      `Claim Payment - Claim ID: ${claimId}`,
+      policyId,
+      'claim_payment'
+    );
+  } catch (error) {
+    console.error('Error processing claim payment:', error);
+    return { success: false, error: 'Failed to process claim payment' };
   }
 };
 
@@ -288,54 +326,12 @@ export const makeManualPremiumPayment = async (
   amount: number
 ): Promise<PremiumPaymentResult> => {
   try {
-    // Get user data
-    const userData = await AsyncStorage.getItem('userData');
-    if (!userData) {
-      return { success: false, error: 'User data not available' };
-    }
-    
-    const user = JSON.parse(userData);
-    
-    // Get the user's phone number and format it
-    const phoneNumber = formatZimbabwePhone(user.contact_details);
-    
-    // Process the payment
-    const result = await processPaynowPayment(
+    return await processPayment(
       amount.toString(),
-      phoneNumber.replace('+', ''),
       'Manual Premium Payment',
-      policyId
+      policyId,
+      'manual_premium'
     );
-    
-    if (result.success) {
-      // Record the payment in Supabase
-      const { data: paymentRecord, error: paymentError } = await supabase
-        .from('policy_payments')
-        .insert([{
-          policy_id: policyId,
-          amount: amount,
-          payment_date: new Date().toISOString(),
-          payment_method: 'ecocash',
-          transaction_reference: result.transactionRef || `manual_${Date.now()}`,
-          status: 'completed'
-        }])
-        .select();
-        
-      if (paymentError) {
-        console.error('Error recording payment:', paymentError);
-        return { success: false, error: 'Payment processed but failed to record' };
-      }
-      
-      if (paymentRecord && paymentRecord.length > 0) {
-        return { 
-          success: true, 
-          payment: paymentRecord[0],
-          transactionRef: result.transactionRef 
-        };
-      }
-    }
-    
-    return result;
   } catch (error) {
     console.error('Error making manual premium payment:', error);
     return { success: false, error: 'Failed to process payment' };
@@ -345,8 +341,9 @@ export const makeManualPremiumPayment = async (
 export default {
   checkDailyPremiumPayment,
   processDailyPremiumPayment,
+  processPayment,
+  processClaimPayment,
   getPolicyPaymentHistory,
   getUserPaymentHistory,
-  makeManualPremiumPayment,
-  processPaynowPayment
+  makeManualPremiumPayment
 };

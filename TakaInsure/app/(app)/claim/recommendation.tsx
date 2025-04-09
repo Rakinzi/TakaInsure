@@ -1,5 +1,3 @@
-// Updates to TakaInsure/app/(app)/claim/recommendation.tsx
-
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -8,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../../services/supabaseClient';
 import { createInsuranceProduct, createPolicy } from '../../../services/policyService';
 import { createClaimWithAnalysis } from '../../../services/claimService';
+import { processPayment } from '../../../services/paymentService';
 
 // Type definitions
 type InsurancePackage = {
@@ -41,6 +40,12 @@ export default function RecommendationScreen() {
   const [claimId, setClaimId] = useState<string | null>(null);
   const [claimData, setClaimData] = useState<any>(null);
   const [images, setImages] = useState<string[]>([]);
+  
+  // Payment states
+  const [showingPayment, setShowingPayment] = useState(false);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState(0);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -308,31 +313,71 @@ export default function RecommendationScreen() {
         success: true
       });
       
-      // Show success message
-      Alert.alert(
-        'Success',
-        'Your insurance package has been activated and securely stored in our database.',
-        [
-          {
-            text: 'View Dashboard',
-            onPress: () => router.replace('/(app)/home'),
-          },
-        ]
-      );
-      
-      // Clear stored claim data
-      await AsyncStorage.removeItem('claimAnalysisResults');
-      await AsyncStorage.removeItem('claimImageUris');
-      await AsyncStorage.removeItem('incidentDate');
-      await AsyncStorage.removeItem('incidentLocation');
-      await AsyncStorage.removeItem('incidentDescription');
+      // Show payment UI
+      setPaymentAmount(packageData.premium / 12); // First month's payment (divided by 12)
+      setShowingPayment(true);
       
     } catch (error) {
       console.error('Error subscribing to insurance:', error);
       Alert.alert('Error', 'Failed to subscribe to insurance package. Please try again.');
-    } finally {
       setLoading(false);
       setProcessingStep('');
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!policyId) {
+      Alert.alert('Error', 'No policy ID found. Please try again.');
+      return;
+    }
+
+    setPaymentProcessing(true);
+
+    try {
+      // Process the payment
+      const paymentResult = await processPayment(
+        paymentAmount.toString(),
+        'First Month Premium Payment',
+        policyId,
+        'premium_payment'
+      );
+
+      if (paymentResult.success) {
+        // Set the payment as successful
+        setPaymentSuccess(true);
+
+        // Update lastPremiumPaymentDate in AsyncStorage
+        const today = new Date().toISOString().split('T')[0];
+        await AsyncStorage.setItem('lastPremiumPaymentDate', today);
+
+        // Clear stored claim data
+        await AsyncStorage.removeItem('claimAnalysisResults');
+        await AsyncStorage.removeItem('claimImageUris');
+        await AsyncStorage.removeItem('incidentDate');
+        await AsyncStorage.removeItem('incidentLocation');
+        await AsyncStorage.removeItem('incidentDescription');
+        
+        Alert.alert(
+          'Success',
+          'Your insurance package has been activated and your payment has been processed successfully.',
+          [
+            {
+              text: 'View Dashboard',
+              onPress: () => router.replace('/(app)/home'),
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Payment Failed', 
+          paymentResult.error || 'There was a problem processing your payment. Please try again.'
+        );
+        setPaymentProcessing(false);
+      }
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      Alert.alert('Payment Error', 'Failed to process payment. Please try again later.');
+      setPaymentProcessing(false);
     }
   };
 
@@ -393,6 +438,50 @@ export default function RecommendationScreen() {
     );
   };
 
+  const renderPaymentView = () => (
+    <View className="bg-white rounded-xl p-6 mb-6">
+      <Text className="text-primary font-bold text-lg mb-3">First Month Premium Payment</Text>
+      
+      {paymentSuccess ? (
+        <View className="bg-green-100 p-4 rounded-lg mb-4">
+          <Text className="text-green-800 font-medium">Payment Successful!</Text>
+          <Text className="text-green-700 mt-2">
+            Your payment of ${paymentAmount.toFixed(2)} has been processed successfully.
+          </Text>
+        </View>
+      ) : (
+        <>
+          <Text className="text-gray-600 mb-4">
+            To activate your policy, please process your first month's premium payment.
+          </Text>
+          
+          <View className="bg-secondary/10 p-4 rounded-lg mb-6">
+            <Text className="text-secondary font-bold text-center text-xl">
+              ${paymentAmount.toFixed(2)}
+            </Text>
+            <Text className="text-gray-600 text-center mt-1">
+              First Month Premium
+            </Text>
+          </View>
+          
+          <TouchableOpacity
+            onPress={handlePayment}
+            disabled={paymentProcessing}
+            className={`${
+              paymentProcessing ? 'bg-gray-400' : 'bg-secondary'
+            } rounded-xl p-4 items-center`}
+          >
+            {paymentProcessing ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text className="text-white font-bold text-lg">Process Payment</Text>
+            )}
+          </TouchableOpacity>
+        </>
+      )}
+    </View>
+  );
+
   return (
     <SafeAreaView className="flex-1 bg-light">
       <ScrollView className="flex-1 p-6">
@@ -401,7 +490,9 @@ export default function RecommendationScreen() {
           Based on our AI analysis, we've created personalized insurance recommendations for you
         </Text>
 
-        {loading ? renderProcessingView() : transaction ? renderTransactionDetails() : (
+        {loading ? renderProcessingView() : 
+         showingPayment ? renderPaymentView() :
+         transaction ? renderTransactionDetails() : (
           <>
             <View className="bg-secondary/10 rounded-xl p-5 mb-6">
               <Text className="text-primary font-semibold mb-2">Why choose TakaInsure?</Text>

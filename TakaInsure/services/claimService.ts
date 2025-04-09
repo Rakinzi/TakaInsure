@@ -268,6 +268,10 @@ export const createClaimWithAnalysis = async (
     }
     
     const claimId = data[0].claim_id;
+    
+    // Store claim ID for future reference
+    await AsyncStorage.setItem('currentClaimId', claimId);
+    
     return claimId;
   } catch (error) {
     console.error('Error in createClaimWithAnalysis:', error);

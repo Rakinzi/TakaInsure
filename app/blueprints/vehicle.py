@@ -25,6 +25,124 @@ logger = logging.getLogger(__name__)
 
 vehicle_bp = Blueprint('vehicle', __name__)
 
+# Define upload directory
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'uploads')
+VEHICLE_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'vehicles')
+
+# Create directories if they don't exist
+for folder in [UPLOAD_FOLDER, VEHICLE_UPLOAD_FOLDER]:
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+@vehicle_bp.route('/upload', methods=['POST'])
+def upload_vehicle_image():
+    """
+    Endpoint to upload a vehicle image
+    """
+    try:
+        if 'file' not in request.files:
+            logger.warning("No file part in request")
+            return jsonify({"success": False, "error": "No file part"}), 400
+            
+        file = request.files['file']
+        
+        if file.filename == '':
+            logger.warning("No selected file")
+            return jsonify({"success": False, "error": "No selected file"}), 400
+            
+        # Get image type (car or plate)
+        image_type = request.form.get('image_type', 'car')
+        
+        # Get image ID if provided, otherwise generate one
+        image_id = request.form.get('image_id', str(uuid.uuid4()))
+        
+        # Get file extension from the original filename
+        file_ext = os.path.splitext(file.filename)[1]
+        if not file_ext:
+            # Default to jpg if no extension is found
+            file_ext = '.jpg'
+            
+        # Create filename using the image ID
+        filename = f"{image_id}{file_ext}"
+        
+        # Create folder structure
+        folder_name = request.form.get('folder', 'vehicles')
+        vehicle_folder = os.path.join(VEHICLE_UPLOAD_FOLDER, folder_name)
+        
+        if not os.path.exists(vehicle_folder):
+            os.makedirs(vehicle_folder)
+            
+        # Save the file
+        file_path = os.path.join(vehicle_folder, filename)
+        file.save(file_path)
+        
+        logger.info(f"Saved {image_type} image: {file_path}")
+        
+        # Generate the relative URL path for database storage
+        # This should match the format the frontend expects
+        relative_path = f"/api/vehicle/image/{folder_name}/{filename}"
+        
+        # Process the image if needed
+        if image_type == 'car':
+            try:
+                car_data = process_car_image(file_path)
+                logger.info(f"Car image processed: {car_data}")
+            except Exception as e:
+                logger.warning(f"Failed to process car image: {str(e)}")
+        elif image_type == 'plate':
+            try:
+                plate_data = process_plate_image(file_path)
+                logger.info(f"Plate image processed: {plate_data}")
+            except Exception as e:
+                logger.warning(f"Failed to process plate image: {str(e)}")
+        
+        # Return the URL
+        return jsonify({
+            "success": True,
+            "imageUrl": relative_path,
+            "imageId": image_id
+        })
+    
+    except Exception as e:
+        logger.exception(f"Error uploading vehicle image: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@vehicle_bp.route('/image/<path:filename>', methods=['GET'])
+def serve_vehicle_image(filename):
+    """
+    Serve vehicle image files
+    """
+    try:
+        # Full path to the vehicle uploads folder
+        vehicle_folder = os.path.join(VEHICLE_UPLOAD_FOLDER)
+        
+        # If the filename contains folder components (e.g. "vehicles/abc.jpg")
+        path_parts = filename.split('/')
+        if len(path_parts) > 1:
+            # The subdirectory (e.g. "vehicles")
+            subfolder = '/'.join(path_parts[:-1])
+            # The actual filename (e.g. "abc.jpg") 
+            filename = path_parts[-1]
+            file_dir = os.path.join(vehicle_folder, subfolder)
+        else:
+            # No subfolder, so the file is directly in the vehicles folder
+            file_dir = vehicle_folder
+            
+        logger.info(f"Serving image from {file_dir}/{filename}")
+        
+        # Check if the file exists
+        full_path = os.path.join(file_dir, filename)
+        if not os.path.exists(full_path):
+            logger.warning(f"Image file not found: {full_path}")
+            return jsonify({"success": False, "error": "Image not found"}), 404
+            
+        # Serve the file
+        return send_from_directory(file_dir, filename)
+    
+    except Exception as e:
+        logger.exception(f"Error serving vehicle image {filename}: {str(e)}")
+        return jsonify({"success": False, "error": f"Error serving image: {str(e)}"}), 500
+
 @vehicle_bp.route('/register', methods=['POST'])
 def register_vehicle():
     """
@@ -150,9 +268,8 @@ def list_vehicles():
         # Format response data
         formatted_vehicles = []
         for vehicle in vehicles:
-            # Convert full URLs for images if needed
-            car_image_url = get_file_url(vehicle.get('car_image_url')) if vehicle.get('car_image_url') else None
-            plate_image_url = get_file_url(vehicle.get('plate_image_url')) if vehicle.get('plate_image_url') else None
+            # Use the car_image_url and plate_image_url directly from database
+            # These should already be in the format "/api/vehicle/image/vehicles/xyz.jpg"
             
             formatted_vehicles.append({
                 "id": vehicle['vehicle_id'],
@@ -160,8 +277,8 @@ def list_vehicles():
                 "carMake": vehicle['car_make'],
                 "carModel": vehicle['car_model'],
                 "carYear": vehicle['car_year'],
-                "carImageUri": car_image_url,
-                "plateImageUri": plate_image_url,
+                "carImageUri": vehicle.get('car_image_url'),
+                "plateImageUri": vehicle.get('plate_image_url'),
                 "timestamp": vehicle['created_at'],
                 "status": vehicle['status']
             })
@@ -191,9 +308,8 @@ def get_vehicle(vehicle_id):
         if not vehicle:
             return jsonify({"success": False, "error": "Vehicle not found"}), 404
         
-        # Convert full URLs for images if needed
-        car_image_url = get_file_url(vehicle.get('car_image_url')) if vehicle.get('car_image_url') else None
-        plate_image_url = get_file_url(vehicle.get('plate_image_url')) if vehicle.get('plate_image_url') else None
+        # Use the car_image_url and plate_image_url directly from the database 
+        # These should be in the format "/api/vehicle/image/vehicles/xyz.jpg"
         
         # Get associated policies
         try:
@@ -209,8 +325,8 @@ def get_vehicle(vehicle_id):
             "carMake": vehicle['car_make'],
             "carModel": vehicle['car_model'],
             "carYear": vehicle['car_year'],
-            "carImageUri": car_image_url,
-            "plateImageUri": plate_image_url,
+            "carImageUri": vehicle.get('car_image_url'),
+            "plateImageUri": vehicle.get('plate_image_url'),
             "timestamp": vehicle['created_at'],
             "status": vehicle['status'],
             "hasInsurance": has_policies
@@ -222,7 +338,7 @@ def get_vehicle(vehicle_id):
         logger.exception(f"Error getting vehicle {vehicle_id}: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@vehicle_bp.route('/image/<vehicle_id>/<image_type>', methods=['GET'])
+@vehicle_bp.route('/<vehicle_id>/image/<image_type>', methods=['GET'])
 def get_vehicle_image(vehicle_id, image_type):
     """
     Get a vehicle image (car or plate)
@@ -250,20 +366,11 @@ def get_vehicle_image(vehicle_id, image_type):
         if not image_url:
             return jsonify({"success": False, "error": "Image not found"}), 404
         
-        # Check if the image is a relative path or a full URL
-        if image_url.startswith('http'):
-            # Return the full URL directly
-            return jsonify({
-                "success": True,
-                "imageUrl": image_url
-            })
-        else:
-            # For relative paths, use get_file_url to get the full URL
-            full_url = get_file_url(image_url)
-            return jsonify({
-                "success": True,
-                "imageUrl": full_url
-            })
+        # We're storing the relative URL directly, so just return it
+        return jsonify({
+            "success": True,
+            "imageUrl": image_url
+        })
         
     except Exception as e:
         logger.exception(f"Error getting vehicle image: {str(e)}")
@@ -310,10 +417,6 @@ def update_vehicle_info(vehicle_id):
         updated_vehicle = update_vehicle(vehicle_id, update_data)
         
         if updated_vehicle:
-            # Convert full URLs for images if needed
-            car_image_url = get_file_url(updated_vehicle.get('car_image_url')) if updated_vehicle.get('car_image_url') else None
-            plate_image_url = get_file_url(updated_vehicle.get('plate_image_url')) if updated_vehicle.get('plate_image_url') else None
-            
             # Format response data
             formatted_vehicle = {
                 "id": updated_vehicle['vehicle_id'],
@@ -321,8 +424,8 @@ def update_vehicle_info(vehicle_id):
                 "carMake": updated_vehicle['car_make'],
                 "carModel": updated_vehicle['car_model'],
                 "carYear": updated_vehicle['car_year'],
-                "carImageUri": car_image_url,
-                "plateImageUri": plate_image_url,
+                "carImageUri": updated_vehicle.get('car_image_url'),
+                "plateImageUri": updated_vehicle.get('plate_image_url'),
                 "timestamp": updated_vehicle['created_at'],
                 "updatedAt": updated_vehicle['updated_at'],
                 "status": updated_vehicle['status']
@@ -359,22 +462,80 @@ def update_vehicle_images(vehicle_id):
         if 'car_image' in request.files:
             car_file = request.files['car_image']
             if car_file.filename:
+                # Generate unique ID for the image
+                image_id = str(uuid.uuid4())
+                
+                # Get file extension
+                file_ext = os.path.splitext(car_file.filename)[1]
+                if not file_ext:
+                    file_ext = '.jpg'
+                
+                # Create folder if it doesn't exist
+                vehicle_folder = os.path.join(VEHICLE_UPLOAD_FOLDER, 'vehicles')
+                if not os.path.exists(vehicle_folder):
+                    os.makedirs(vehicle_folder)
+                
+                # Save the file
+                filename = f"{image_id}{file_ext}"
+                file_path = os.path.join(vehicle_folder, filename)
+                car_file.save(file_path)
+                
                 # Delete existing car image if any
                 if existing_vehicle.get('car_image_url'):
-                    delete_file(existing_vehicle['car_image_url'])
+                    try:
+                        old_url = existing_vehicle['car_image_url']
+                        # Extract the filename from the URL
+                        old_filename = old_url.split('/')[-1]
+                        old_path = os.path.join(vehicle_folder, old_filename)
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
+                            logger.info(f"Deleted old car image: {old_path}")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete old car image: {str(e)}")
                 
-                car_image_url = save_vehicle_image(car_file, vehicle_id, 'car')
+                # Generate the relative URL for the new image
+                car_image_url = f"/api/vehicle/image/vehicles/{filename}"
+                logger.info(f"New car image URL: {car_image_url}")
         
         # Process plate image if provided
         plate_image_url = None
         if 'plate_image' in request.files:
             plate_file = request.files['plate_image']
             if plate_file.filename:
+                # Generate unique ID for the image
+                image_id = str(uuid.uuid4())
+                
+                # Get file extension
+                file_ext = os.path.splitext(plate_file.filename)[1]
+                if not file_ext:
+                    file_ext = '.jpg'
+                
+                # Create folder if it doesn't exist
+                vehicle_folder = os.path.join(VEHICLE_UPLOAD_FOLDER, 'vehicles')
+                if not os.path.exists(vehicle_folder):
+                    os.makedirs(vehicle_folder)
+                
+                # Save the file
+                filename = f"{image_id}{file_ext}"
+                file_path = os.path.join(vehicle_folder, filename)
+                plate_file.save(file_path)
+                
                 # Delete existing plate image if any
                 if existing_vehicle.get('plate_image_url'):
-                    delete_file(existing_vehicle['plate_image_url'])
+                    try:
+                        old_url = existing_vehicle['plate_image_url']
+                        # Extract the filename from the URL
+                        old_filename = old_url.split('/')[-1]
+                        old_path = os.path.join(vehicle_folder, old_filename)
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
+                            logger.info(f"Deleted old plate image: {old_path}")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete old plate image: {str(e)}")
                 
-                plate_image_url = save_vehicle_image(plate_file, vehicle_id, 'plate')
+                # Generate the relative URL for the new image
+                plate_image_url = f"/api/vehicle/image/vehicles/{filename}"
+                logger.info(f"New plate image URL: {plate_image_url}")
         
         # Prepare update data for Supabase
         update_data = {
@@ -391,10 +552,6 @@ def update_vehicle_images(vehicle_id):
         updated_vehicle = update_vehicle(vehicle_id, update_data)
         
         if updated_vehicle:
-            # Convert full URLs for images if needed
-            car_image_url = get_file_url(updated_vehicle.get('car_image_url')) if updated_vehicle.get('car_image_url') else None
-            plate_image_url = get_file_url(updated_vehicle.get('plate_image_url')) if updated_vehicle.get('plate_image_url') else None
-            
             # Format response data
             formatted_vehicle = {
                 "id": updated_vehicle['vehicle_id'],
@@ -402,8 +559,8 @@ def update_vehicle_images(vehicle_id):
                 "carMake": updated_vehicle['car_make'],
                 "carModel": updated_vehicle['car_model'],
                 "carYear": updated_vehicle['car_year'],
-                "carImageUri": car_image_url,
-                "plateImageUri": plate_image_url,
+                "carImageUri": updated_vehicle.get('car_image_url'),
+                "plateImageUri": updated_vehicle.get('plate_image_url'),
                 "timestamp": updated_vehicle['created_at'],
                 "updatedAt": updated_vehicle['updated_at'],
                 "status": updated_vehicle['status']
@@ -436,11 +593,31 @@ def delete_vehicle_record(vehicle_id):
             return jsonify({"success": False, "error": "Vehicle not found"}), 404
         
         # Delete associated images
+        vehicle_folder = os.path.join(VEHICLE_UPLOAD_FOLDER, 'vehicles')
+        
         if existing_vehicle.get('car_image_url'):
-            delete_file(existing_vehicle['car_image_url'])
+            try:
+                old_url = existing_vehicle['car_image_url']
+                # Extract the filename from the URL
+                old_filename = old_url.split('/')[-1]
+                old_path = os.path.join(vehicle_folder, old_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                    logger.info(f"Deleted car image: {old_path}")
+            except Exception as e:
+                logger.warning(f"Failed to delete car image: {str(e)}")
         
         if existing_vehicle.get('plate_image_url'):
-            delete_file(existing_vehicle['plate_image_url'])
+            try:
+                old_url = existing_vehicle['plate_image_url']
+                # Extract the filename from the URL
+                old_filename = old_url.split('/')[-1]
+                old_path = os.path.join(vehicle_folder, old_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                    logger.info(f"Deleted plate image: {old_path}")
+            except Exception as e:
+                logger.warning(f"Failed to delete plate image: {str(e)}")
         
         # Delete from Supabase
         result = delete_vehicle(vehicle_id)
@@ -453,38 +630,3 @@ def delete_vehicle_record(vehicle_id):
     except Exception as e:
         logger.exception(f"Error deleting vehicle {vehicle_id}: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
-
-# Serve uploaded files
-# Serve uploaded files
-@vehicle_bp.route('/uploads/<path:filename>')
-def serve_upload(filename):
-    """
-    Serve uploaded files
-    """
-    try:
-        # Get the base directory (project root)
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        
-        # Construct full path to the uploads folder
-        uploads_folder = os.path.join(base_dir, 'uploads')
-        
-        # Full path to the requested file
-        file_path = os.path.join(uploads_folder, filename)
-        
-        # Get the directory containing the file and the file name
-        directory = os.path.dirname(file_path)
-        file_name = os.path.basename(file_path)
-        
-        # Check if the file exists
-        if not os.path.exists(file_path):
-            logger.warning(f"File not found: {file_path}")
-            return jsonify({"success": False, "error": "File not found"}), 404
-        
-        # Log the file being served
-        logger.info(f"Serving file: {file_path}")
-        
-        # Serve the file from the directory
-        return send_from_directory(directory, file_name)
-    except Exception as e:
-        logger.exception(f"Error serving file {filename}: {str(e)}")
-        return jsonify({"success": False, "error": "File not found"}), 404

@@ -2,6 +2,7 @@ from app import create_app
 from dotenv import load_dotenv
 import os
 import logging
+from app.services.daily_premium_checker import start_premium_checker_thread
 
 load_dotenv()
 
@@ -11,6 +12,13 @@ if "LOG_LEVEL" not in os.environ:
 
 # Create the Flask application
 app = create_app()
+
+# Start the daily premium checker thread
+if os.environ.get("ENABLE_DAILY_PREMIUM_CHECKER", "True").lower() == "true":
+    start_premium_checker_thread()
+    logging.info("Daily premium checker enabled")
+else:
+    logging.info("Daily premium checker disabled")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

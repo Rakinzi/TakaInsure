@@ -34,8 +34,8 @@ def create_app():
             if 'From' in safe_form:
                 # Mask the phone number except last 4 digits
                 from_value = safe_form['From']
-                if isinstance(from_value, str) and len(from_value) > 4:
-                    safe_form['From'] = '****' + from_value[-4:]
+                if isinstance(from_value, str) and len(str(from_value)) > 4:
+                    safe_form['From'] = '****' + str(from_value)[-4:]
             logger.debug(f"Form data: {safe_form}")
         
         if request.files:
@@ -60,12 +60,31 @@ def create_app():
     from app.blueprints.car_recognition import car_recognition_bp
     from app.blueprints.license_plate import license_plate_bp
     from app.blueprints.vehicle import vehicle_bp
+    from app.blueprints.payment import payment_bp
     
     app.register_blueprint(whatsapp_bp, url_prefix='/api/whatsapp')
     app.register_blueprint(car_damage_bp, url_prefix='/api/car-damage')
     app.register_blueprint(car_recognition_bp, url_prefix='/api/car-recognition')
     app.register_blueprint(license_plate_bp, url_prefix='/api/license-plate')
     app.register_blueprint(vehicle_bp, url_prefix='/api/vehicle')
+    app.register_blueprint(payment_bp, url_prefix='/api/payment')
+    
+    # Create upload directories if they don't exist
+    upload_folders = [
+        os.path.join(os.path.dirname(os.path.dirname(app.root_path)), 'uploads'),
+        os.path.join(os.path.dirname(os.path.dirname(app.root_path)), 'uploads', 'vehicles'),
+        os.path.join(os.path.dirname(os.path.dirname(app.root_path)), 'uploads', 'claims'),
+        os.path.join(os.path.dirname(os.path.dirname(app.root_path)), 'uploads', 'profiles'),
+        os.path.join(os.path.dirname(os.path.dirname(app.root_path)), 'temp')
+    ]
+    
+    for folder in upload_folders:
+        if not os.path.exists(folder):
+            try:
+                os.makedirs(folder)
+                logger.info(f"Created directory: {folder}")
+            except Exception as e:
+                logger.warning(f"Could not create directory {folder}: {str(e)}")
     
     @app.route('/')
     def index():

@@ -652,3 +652,47 @@ def update_claim_status(claim_id, new_status, notes=None):
     except Exception as e:
         logger.exception(f"Error updating claim in Supabase: {str(e)}")
         raise
+def get_claim_by_id(claim_id):
+    """
+    Get a claim by ID from Supabase
+    """
+    if not supabase:
+        logger.error("Cannot get claim: Supabase client is not initialized")
+        raise Exception("Supabase client not initialized")
+    
+    try:
+        logger.info(f"Getting claim with ID {claim_id} from Supabase")
+        
+        # Make sure claim_id is a valid UUID
+        try:
+            claim_id = str(uuid.UUID(str(claim_id)))
+        except (ValueError, TypeError):
+            logger.error(f"Invalid claim_id format: {claim_id}")
+            raise ValueError(f"Invalid claim_id format: {claim_id}")
+        
+        # Get the claim with joined policy and vehicle data
+        response = supabase.table("claim").select("""
+            *,
+            policy (*),
+            vehicle:vehicle_id (*)
+        """).eq("claim_id", claim_id).execute()
+        
+        if response.data and len(response.data) > 0:
+            logger.info(f"Successfully retrieved claim with ID: {claim_id}")
+            
+            # Convert evidence_urls from JSON string to object if needed
+            claim_data = response.data[0]
+            if 'evidence_urls' in claim_data and isinstance(claim_data['evidence_urls'], str):
+                try:
+                    claim_data['evidence_urls'] = json.loads(claim_data['evidence_urls'])
+                except json.JSONDecodeError:
+                    logger.warning(f"Failed to parse evidence_urls JSON for claim {claim_id}")
+                    claim_data['evidence_urls'] = []
+            
+            return claim_data
+        else:
+            logger.warning(f"No claim found with ID: {claim_id}")
+            return None
+    except Exception as e:
+        logger.exception(f"Error getting claim from Supabase: {str(e)}")
+        raise

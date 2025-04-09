@@ -31,10 +31,9 @@ def process_payment():
     Request body:
     {
         "amount": "10.00",
-        "phoneNumber": "0771111111",
+        "phoneNumber": "0771111111",  # This should be kept the same as in test.py
         "description": "Premium Payment",
-        "reference": "policy_123",
-        "username": "John Doe"  # Added username field
+        "reference": "policy_123"  # Optional
     }
     """
     try:
@@ -49,8 +48,6 @@ def process_payment():
         phone_number = data.get('phoneNumber', '0771111111')  # Default to the working number
         description = data.get('description', 'TakaInsure Payment')
         reference = data.get('reference', f'payment_{datetime.now().strftime("%Y%m%d%H%M%S")}')
-        username = data.get('username', 'User')  # Get username, default to 'User' if not provided
-        policy_id = data.get('policyId')  # Get policy ID if provided
         
         # Validate required parameters
         if not amount:
@@ -62,14 +59,11 @@ def process_payment():
         except ValueError:
             return jsonify({"success": False, "error": "Invalid amount format"}), 400
         
-        # Add username to the reference for better tracking
-        reference_with_username = f"{reference}_{username.replace(' ', '_')}"
-        
         # Log payment attempt
-        logger.info(f"Processing payment: {amount} from {phone_number} for {description} (ref: {reference_with_username})")
+        logger.info(f"Processing payment: {amount} from {phone_number} for {description} (ref: {reference})")
         
         # Create payment with Paynow
-        payment = paynow.create_payment(reference_with_username, 'silverrakinzi@gmail.com')
+        payment = paynow.create_payment(reference, 'silverrakinzi@gmail.com')
         
         # Add payment details
         payment.add(description, amount)
@@ -82,33 +76,13 @@ def process_payment():
         
         # Check if payment initiation was successful
         if response.success:
-            # If policy_id is provided, record the payment in the policy_payments table
-            if policy_id:
-                try:
-                    from app.services.supabase_service import get_supabase_client
-                    supabase = get_supabase_client()
-                    
-                    if supabase:
-                        payment_record = {
-                            "policy_id": policy_id,
-                            "amount": float(amount),
-                            "payment_date": datetime.now().isoformat(),
-                            "payment_method": "ecocash",
-                            "transaction_reference": response.data.get('reference', reference_with_username),
-                            "status": "pending",  # Will be updated to "completed" when payment is confirmed
-                            "username": username  # Store the username for reference
-                        }
-                        
-                        supabase.table("policy_payments").insert(payment_record).execute()
-                        logger.info(f"Payment record created for policy {policy_id}")
-                except Exception as db_error:
-                    logger.error(f"Failed to record payment in database: {str(db_error)}")
-                    # Continue despite database error since payment was initiated
+            # In a real implementation, you would store the transaction details 
+            # and poll for status updates using response.poll_url
             
             return jsonify({
                 "success": True,
                 "message": "Payment initiated successfully",
-                "transactionReference": response.data.get('reference', reference_with_username),
+                "transactionReference": response.data.get('reference', reference),
                 "instructions": response.data.get('instructions', 'Check your phone to complete the payment'),
                 "pollUrl": response.poll_url
             })
@@ -122,7 +96,7 @@ def process_payment():
     except Exception as e:
         logger.exception(f"Error processing payment: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
-    
+
 @payment_bp.route('/check-status', methods=['GET'])
 def check_payment_status():
     """

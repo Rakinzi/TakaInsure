@@ -1,4 +1,4 @@
-import { VehicleInfo, VehicleDetectionResult, PlateDetectionResult } from '../types/vehicle';
+import { VehicleInfo, VehicleDetectionResult, PlateDetectionResult, ImageUploadResponse } from '../types/vehicle';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabaseClient';
@@ -110,39 +110,85 @@ export const detectCarMakeModel = async (imageUri: string): Promise<VehicleDetec
 };
 
 /**
- * Upload an image to Supabase storage
+ * Upload an image to the Flask backend
  */
-const uploadImageToStorage = async (imageUri: string, folder: string, filename: string): Promise<string | null> => {
+export const uploadImageToServer = async (
+  imageUri: string, 
+  folder: string = 'vehicles', 
+  imageType: string = 'car'
+): Promise<ImageUploadResponse> => {
   try {
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    console.log('Starting image upload to server:', { folder, imageType });
     
-    const fileExt = imageUri.split('.').pop() || 'jpg';
-    const filePath = `${folder}/${filename}.${fileExt}`;
+    // Create form data
+    const formData = new FormData();
     
-    const { data, error } = await supabase
-      .storage
-      .from('takainsure')
-      .upload(filePath, blob, {
-        contentType: `image/${fileExt}`,
-        upsert: true
-      });
+    // Get the filename from the URI
+    const filename = imageUri.split('/').pop() || 'image.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
     
-    if (error) {
-      console.error('Error uploading image to Supabase storage:', error);
-      return null;
+    // Append the file
+    formData.append('file', {
+      uri: imageUri,
+      name: filename,
+      type,
+    } as any);
+    
+    // Append metadata
+    formData.append('folder', folder);
+    formData.append('image_type', imageType);
+    
+    // Get API URL
+    const API_URL = await getApiUrl();
+    
+    // Get auth headers if available
+    let headers = {};
+    try {
+      const userToken = await AsyncStorage.getItem('userToken');
+      if (userToken) {
+        headers = {
+          'Authorization': `Bearer ${userToken}`,
+        };
+      }
+    } catch (e) {
+      console.log('No auth token found, continuing without authentication');
     }
     
-    // Get public URL of the uploaded file
-    const { data: urlData } = supabase
-      .storage
-      .from('takainsure')
-      .getPublicUrl(filePath);
+    console.log('Uploading to:', `${API_URL}/vehicle/upload`);
     
-    return urlData.publicUrl;
-  } catch (error) {
+    // Upload the image
+    const response = await axios.post(
+      `${API_URL}/vehicle/upload`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...headers
+        },
+      }
+    );
+    
+    console.log('Upload response:', response.data);
+    
+    if (response.data && response.data.success) {
+      return {
+        success: true,
+        imageUrl: response.data.imageUrl,
+      };
+    } else {
+      console.error('Upload failed:', response.data?.error || 'Unknown error');
+      return {
+        success: false,
+        error: response.data?.error || 'Failed to upload image',
+      };
+    }
+  } catch (error:any) {
     console.error('Image upload error:', error);
-    return null;
+    return {
+      success: false,
+      error: error.message || 'Exception during image upload',
+    };
   }
 };
 
@@ -160,18 +206,26 @@ export const registerVehicle = async (vehicleInfo: VehicleInfo): Promise<string>
       throw new Error('No policyholder ID found - user must be logged in');
     }
     
-    // Upload vehicle images to storage if provided
+    // Upload vehicle images to server if provided
     let carImageUrl = null;
     let plateImageUrl = null;
     
     if (vehicleInfo.carImageUri) {
-      const filename = `car_${new Date().getTime()}`;
-      carImageUrl = await uploadImageToStorage(vehicleInfo.carImageUri, 'vehicles', filename);
+      const carUploadResult = await uploadImageToServer(vehicleInfo.carImageUri, 'vehicles', 'car');
+      if (carUploadResult.success) {
+        carImageUrl = carUploadResult.imageUrl;
+      } else {
+        console.error('Car image upload failed:', carUploadResult.error);
+      }
     }
     
     if (vehicleInfo.plateImageUri) {
-      const filename = `plate_${new Date().getTime()}`;
-      plateImageUrl = await uploadImageToStorage(vehicleInfo.plateImageUri, 'plates', filename);
+      const plateUploadResult = await uploadImageToServer(vehicleInfo.plateImageUri, 'vehicles', 'plate');
+      if (plateUploadResult.success) {
+        plateImageUrl = plateUploadResult.imageUrl;
+      } else {
+        console.error('Plate image upload failed:', plateUploadResult.error);
+      }
     }
     
     // Prepare vehicle data for insertion
@@ -363,19 +417,21 @@ export const updateVehicleImages = async (
     
     // Upload car image if provided
     if (carImageUri) {
-      const filename = `car_${vehicleId}_${new Date().getTime()}`;
-      const carImageUrl = await uploadImageToStorage(carImageUri, 'vehicles', filename);
-      if (carImageUrl) {
-        updateData.car_image_url = carImageUrl;
+      const carUploadResult = await uploadImageToServer(carImageUri, 'vehicles', 'car');
+      if (carUploadResult.success) {
+        updateData.car_image_url = carUploadResult.imageUrl;
+      } else {
+        console.error('Car image upload failed:', carUploadResult.error);
       }
     }
     
     // Upload plate image if provided
     if (plateImageUri) {
-      const filename = `plate_${vehicleId}_${new Date().getTime()}`;
-      const plateImageUrl = await uploadImageToStorage(plateImageUri, 'plates', filename);
-      if (plateImageUrl) {
-        updateData.plate_image_url = plateImageUrl;
+      const plateUploadResult = await uploadImageToServer(plateImageUri, 'vehicles', 'plate');
+      if (plateUploadResult.success) {
+        updateData.plate_image_url = plateUploadResult.imageUrl;
+      } else {
+        console.error('Plate image upload failed:', plateUploadResult.error);
       }
     }
     

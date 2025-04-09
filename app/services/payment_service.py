@@ -339,7 +339,7 @@ def record_daily_premium_payment(policy_holder_id, policies, amount):
                 "payment_date": datetime.now().isoformat(),
                 "payment_method": "ecocash",
                 "payment_type": "premium",
-                "transaction_reference": 'Order',
+                "transaction_reference": f"{policy['policy_id']}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
                 "status": "completed"
             }
             

@@ -61,20 +61,40 @@ export default function ClaimDetailsScreen() {
         urls = evidenceUrls.images;
       }
       
-      // Convert relative URLs to absolute URLs
+      console.log('Raw image URLs from database:', urls);
+      
+      if (urls.length === 0) {
+        return;
+      }
+      
+      // Get the API URL to construct complete URLs
       const apiUrl = await getApiUrl();
       const baseUrl = apiUrl.includes('/api') ? apiUrl.split('/api')[0] : apiUrl;
       
       const fullUrls = urls.map(url => {
+        // Handle already absolute URLs (starting with http or https)
         if (url.startsWith('http')) {
           return url;
-        } else if (url.startsWith('/api')) {
+        } 
+        // Handle API paths that start with /api/
+        else if (url.startsWith('/api/')) {
           return `${baseUrl}${url}`;
-        } else {
-          return `${baseUrl}/${url}`;
+        }
+        // Handle paths that start with /uploads/
+        else if (url.startsWith('/uploads/')) {
+          // Since we registered the blueprint with prefix '/api',
+          // we need to prepend '/api' to make it '/api/uploads/...'
+          return `${baseUrl}/api${url}`;
+        }
+        // Handle any other relative paths
+        else {
+          // Ensure path starts with a slash if it doesn't already
+          const path = url.startsWith('/') ? url : `/${url}`;
+          return `${baseUrl}/api${path}`;
         }
       });
       
+      console.log('Processed image URLs:', fullUrls);
       setImageUrls(fullUrls);
     } catch (error) {
       console.error('Error processing evidence URLs:', error);

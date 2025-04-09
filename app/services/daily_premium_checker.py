@@ -3,6 +3,7 @@ import threading
 import time
 from datetime import datetime, date
 import calendar
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +111,7 @@ def check_and_process_daily_premiums():
                         "amount": daily_premium,
                         "payment_date": datetime.now().isoformat(),
                         "payment_method": "ecocash",
-                        "transaction_reference": payment_result.get('reference', f"daily_premium_{datetime.now().strftime('%Y%m%d%H%M%S')}"),
+                        "transaction_reference": f"{uuid.uuid4()}",
                         "status": "completed"
                     }
                     

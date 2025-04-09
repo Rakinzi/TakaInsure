@@ -164,12 +164,19 @@ def save_claim_image(file, claim_id, image_index=0):
         
         logger.info(f"Saved image for claim {claim_id}: {file_path}")
         
-        # Return the URL path to the file (relative to the server)
-        return f"/uploads/claims/{claim_id}/{filename}"
+        # Calculate the relative path from UPLOAD_FOLDER
+        # This creates a path like "claims/claim_id/filename.ext"
+        relative_path = os.path.relpath(file_path, UPLOAD_FOLDER)
+        
+        # The path should be "/uploads/claims/claim_id/filename.ext"
+        # Since we registered the blueprint with prefix '/api', the full URL
+        # that the frontend will construct will be:
+        # {baseUrl}/api/uploads/claims/claim_id/filename.ext
+        return f"/uploads/{relative_path.replace(os.sep, '/')}"
     except Exception as e:
         logger.exception(f"Error saving image for claim {claim_id}: {str(e)}")
         return None
-
+    
 def save_profile_image(file, policyholder_id):
     """
     Save a profile image to the filesystem

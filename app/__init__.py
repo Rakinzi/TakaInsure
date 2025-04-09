@@ -62,6 +62,7 @@ def create_app():
     from app.blueprints.vehicle import vehicle_bp
     from app.blueprints.payment import payment_bp
     from app.blueprints.claim import claim_bp
+    from app.blueprints.static_files import static_files_bp
     
     app.register_blueprint(whatsapp_bp, url_prefix='/api/whatsapp')
     app.register_blueprint(car_damage_bp, url_prefix='/api/car-damage')
@@ -70,6 +71,7 @@ def create_app():
     app.register_blueprint(vehicle_bp, url_prefix='/api/vehicle')
     app.register_blueprint(payment_bp, url_prefix='/api/payment')
     app.register_blueprint(claim_bp, url_prefix='/api/claim')
+    app.register_blueprint(static_files_bp, url_prefix='/api')
     
     # Create upload directories if they don't exist
     upload_folders = [

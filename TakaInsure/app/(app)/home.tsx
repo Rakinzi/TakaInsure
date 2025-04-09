@@ -7,6 +7,8 @@ import { supabase } from '../../services/supabaseClient';
 import { getPoliciesByPolicyholder } from '../../services/policyService';
 import { getUserVehicles } from '../../services/vehicleService';
 import { getUserClaims } from '../../services/claimService';
+import { checkDailyPremiumPayment } from '../../services/paymentService';
+import PremiumPaymentModal from '../../components/payment/PremiumPaymentModal';
 
 type UserData = {
   full_name: string;
@@ -23,10 +25,20 @@ export default function HomeScreen() {
   const [vehicleCount, setVehicleCount] = useState(0);
   const [policyCount, setPolicyCount] = useState(0);
   const [claimCount, setClaimCount] = useState(0);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentDue, setPaymentDue] = useState(false);
+  const [dailyPremiumAmount, setDailyPremiumAmount] = useState(0);
 
   useEffect(() => {
     loadUserData();
   }, []);
+
+  // Check for daily payment on component mount
+  useEffect(() => {
+    if (!loading && userData) {
+      checkDailyPayment();
+    }
+  }, [loading, userData]);
 
   const loadUserData = async () => {
     try {
@@ -76,6 +88,50 @@ export default function HomeScreen() {
     } finally {
       setLoading(false);
     }
+  };
+  
+  const checkDailyPayment = async () => {
+    try {
+      // Check if daily payment is needed
+      const paymentNeeded = await checkDailyPremiumPayment();
+      
+      if (paymentNeeded) {
+        console.log('Daily premium payment is needed');
+        
+        // Calculate the daily premium amount
+        // In a real app, this would come from the backend
+        // For this demo, we'll get active policies and calculate it
+        
+        const { data: policies } = await supabase
+          .from('policy')
+          .select('premium_amount')
+          .eq('policyholder_id', userData?.policyholder_id)
+          .eq('status', 'active');
+          
+        if (policies && policies.length > 0) {
+          // Calculate total monthly premium
+          const totalMonthlyPremium = policies.reduce(
+            (sum, policy) => sum + (policy.premium_amount || 0), 
+            0
+          );
+          
+          // Calculate daily amount (monthly amount / 30 days)
+          const dailyAmount = totalMonthlyPremium / 30;
+          
+          // Set state
+          setDailyPremiumAmount(Math.round(dailyAmount * 100) / 100);
+          setPaymentDue(true);
+          setShowPaymentModal(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking daily payment:', error);
+    }
+  };
+  
+  const handlePaymentSuccess = () => {
+    setPaymentDue(false);
+    // Optionally show a success message or update UI
   };
 
   const fetchVehicles = async (policyHolderId: string) => {
@@ -139,22 +195,12 @@ export default function HomeScreen() {
   };
 
   const handleViewClaims = () => {
-    Alert.alert(
-      'Coming Soon',
-      'The claims management screen is coming soon. Check back later!'
-    );
+    router.push('/claim/list');
   };
-
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 bg-light">
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#8E1616" />
-          <Text className="text-gray-600 mt-4">Loading your dashboard...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  
+  const handleViewPayments = () => {
+    router.push('/payments');
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-light">
@@ -180,6 +226,22 @@ export default function HomeScreen() {
             <Text className="text-secondary text-lg">{userData?.policyholder_id || 'Not available'}</Text>
           </View>
         </View>
+
+        {/* Payment Due Banner (if payment is due) */}
+        {paymentDue && (
+          <TouchableOpacity 
+            onPress={() => setShowPaymentModal(true)}
+            className="mx-6 mt-4 bg-yellow-100 p-4 rounded-xl border border-yellow-300"
+          >
+            <View className="flex-row items-center">
+              <View className="w-2 h-2 rounded-full bg-yellow-500 mr-2" />
+              <Text className="text-yellow-800 font-medium flex-1">
+                Daily premium payment of ${dailyPremiumAmount.toFixed(2)} is due
+              </Text>
+              <Text className="text-secondary font-bold">Pay Now</Text>
+            </View>
+          </TouchableOpacity>
+        )}
 
         {/* Stats Section */}
         <View className="p-6">
@@ -275,6 +337,24 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
 
+          {/* Payment History */}
+          <TouchableOpacity 
+            onPress={handleViewPayments}
+            className="bg-white flex-row items-center p-4 rounded-xl shadow-sm mb-4 border-l-4 border-secondary"
+          >
+           <View className="bg-tertiary/20 p-4 rounded-lg mr-4">
+              <Image
+                source={require('../../assets/images/settings.png')}
+                className="w-8 h-8"
+                resizeMode="contain"
+              />
+            </View>
+            <View>
+              <Text className="text-primary text-lg font-bold">Payment History</Text>
+              <Text className="text-gray-500">Track your premium payments</Text>
+            </View>
+          </TouchableOpacity>
+
           {/* Network Settings button in quick actions */}
           <TouchableOpacity 
             onPress={handleSettings}
@@ -293,22 +373,6 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
         </View>
-
-        {/* Database Information  */}
-        {/* <View className="p-6 pt-0">
-          <View className="bg-primary/10 p-4 rounded-xl mb-6">
-            <Text className="text-primary font-bold mb-2">Secure Database Technology</Text>
-            <Text className="text-gray-700 mb-3">
-              All TakaInsure policies use secure database technology to ensure transparency, security, and faster claim settlements.
-            </Text>
-            <TouchableOpacity 
-              onPress={handleViewPolicies}
-              className="bg-primary py-2 px-4 rounded-lg self-start"
-            >
-              <Text className="text-white font-semibold">View Your Policies</Text>
-            </TouchableOpacity>
-          </View>
-        </View> */}
 
         {/* Information Section */}
         <View className="p-6 pt-0">
@@ -332,6 +396,14 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Premium Payment Modal */}
+      <PremiumPaymentModal
+        visible={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSuccess={handlePaymentSuccess}
+        amount={dailyPremiumAmount}
+      />
     </SafeAreaView>
   );
 }

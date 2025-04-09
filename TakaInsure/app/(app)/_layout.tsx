@@ -109,6 +109,28 @@ export default function AppLayout() {
           presentation: 'modal',
         }}
       />
+
+      <Stack.Screen
+        name="claim/list"
+        options={{
+          title: 'My Claims',
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name="claim/details"
+        options={{
+          title: 'Claim Details',
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name="payments/index"
+        options={{
+          title: 'Payment History',
+          presentation: 'modal',
+        }}
+      />
     </Stack>
   );
 }

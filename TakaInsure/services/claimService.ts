@@ -313,11 +313,185 @@ export const getUserClaims = async (): Promise<ClaimWithDetails[]> => {
   }
 };
 
-// Export other existing functions
+export const getClaimById = async (claimId: string): Promise<ClaimWithDetails | null> => {
+  try {
+    // Validate claim ID format
+    if (!claimId) {
+      throw new Error('Claim ID is required');
+    }
+    
+    // Get claim from Supabase
+    const { data, error } = await supabase
+      .from('claim')
+      .select(`
+        *,
+        policy (*),
+        vehicle:vehicle_id (*)
+      `)
+      .eq('claim_id', claimId)
+      .single();
+    
+    if (error) {
+      console.error(`Error fetching claim ${claimId}:`, error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error(`Error in getClaimById ${claimId}:`, error);
+    return null;
+  }
+};
+
+export const updateClaimStatus = async (
+  claimId: string, 
+  newStatus: string, 
+  note?: string
+): Promise<boolean> => {
+  try {
+    // Validate inputs
+    if (!claimId || !newStatus) {
+      throw new Error('Claim ID and new status are required');
+    }
+    
+    // Prepare update data
+    const updateData: any = {
+      claim_status: newStatus,
+      updated_at: new Date().toISOString()
+    };
+    
+    // If note is provided, append it to the evidence_urls
+    if (note) {
+      // First get the current claim to access its evidence_urls
+      const { data: currentClaim, error: fetchError } = await supabase
+        .from('claim')
+        .select('evidence_urls')
+        .eq('claim_id', claimId)
+        .single();
+      
+      if (fetchError) {
+        console.error(`Error fetching claim ${claimId}:`, fetchError);
+      } else if (currentClaim) {
+        // Parse evidence_urls
+        let evidenceData: any = {};
+        
+        if (currentClaim.evidence_urls) {
+          if (typeof currentClaim.evidence_urls === 'string') {
+            try {
+              evidenceData = JSON.parse(currentClaim.evidence_urls);
+            } catch (e) {
+              console.error('Error parsing evidence_urls:', e);
+            }
+          } else {
+            evidenceData = currentClaim.evidence_urls;
+          }
+        }
+        
+        // Add note to notes array
+        if (!evidenceData.notes) {
+          evidenceData.notes = [];
+        }
+        
+        evidenceData.notes.push({
+          timestamp: new Date().toISOString(),
+          status: newStatus,
+          note: note
+        });
+        
+        // Update the evidence_urls field
+        updateData.evidence_urls = evidenceData;
+      }
+    }
+    
+    // Update the claim
+    const { error } = await supabase
+      .from('claim')
+      .update(updateData)
+      .eq('claim_id', claimId);
+    
+    if (error) {
+      console.error(`Error updating claim ${claimId}:`, error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Error in updateClaimStatus ${claimId}:`, error);
+    return false;
+  }
+};
+
+/**
+ * Create a payment for a claim
+ */
+export const processClaimPayment = async (
+  claimId: string,
+  amount: number
+): Promise<boolean> => {
+  try {
+    // Get the claim to verify it's approved
+    const { data: claim, error: claimError } = await supabase
+      .from('claim')
+      .select('claim_status, policyholder_id')
+      .eq('claim_id', claimId)
+      .single();
+    
+    if (claimError || !claim) {
+      console.error(`Error fetching claim ${claimId}:`, claimError);
+      return false;
+    }
+    
+    // Only approved claims can be paid
+    if (claim.claim_status !== 'approved') {
+      console.error(`Cannot pay claim ${claimId}: status is ${claim.claim_status}`);
+      return false;
+    }
+    
+    // Insert payment record
+    const { error: paymentError } = await supabase
+      .from('claim_payment')
+      .insert([{
+        claim_id: claimId,
+        amount: amount,
+        payment_date: new Date().toISOString(),
+        payment_method: 'bank_transfer',
+        transaction_reference: `claim_payment_${Date.now()}`,
+        status: 'completed'
+      }]);
+    
+    if (paymentError) {
+      console.error(`Error creating payment for claim ${claimId}:`, paymentError);
+      return false;
+    }
+    
+    // Update claim status to paid
+    const { error: updateError } = await supabase
+      .from('claim')
+      .update({
+        claim_status: 'paid',
+        updated_at: new Date().toISOString()
+      })
+      .eq('claim_id', claimId);
+    
+    if (updateError) {
+      console.error(`Error updating claim status to paid:`, updateError);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Error processing claim payment for ${claimId}:`, error);
+    return false;
+  }
+};
+
+// Export all functions
 export default {
   uploadClaimImageForAnalysis,
   uploadClaimImages,
   createClaimWithAnalysis,
   getUserClaims,
-  // Include other existing functions here
+  getClaimById,
+  updateClaimStatus,
+  processClaimPayment
 };

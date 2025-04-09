@@ -1,21 +1,29 @@
+// Updates to TakaInsure/app/(app)/claim/upload.tsx
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { uploadClaimImageForAnalysis } from '../../../services/claimService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type UploadedImage = {
   uri: string;
   type: string;
   name?: string;
   isUploading?: boolean;
+  isAnalyzed?: boolean;
 };
 
 export default function UploadClaimScreen() {
   const router = useRouter();
-  const { claimType } = useLocalSearchParams();
+  const { claimType, incidentDate, incidentLocation, incidentDescription } = useLocalSearchParams();
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
     requestPermissions();
@@ -50,8 +58,17 @@ export default function UploadClaimScreen() {
           uri: selectedImage.uri,
           type: 'image/jpeg',
           name: `image_${Date.now()}.jpg`,
+          isUploading: false,
+          isAnalyzed: false
         };
-        setImages([...images, newImage]);
+        
+        const newImages = [...images, newImage];
+        setImages(newImages);
+        
+        // If this is the first image, automatically analyze it
+        if (images.length === 0 && claimType === 'car_accident') {
+          analyzeImage(newImages.length - 1, newImages);
+        }
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -80,8 +97,17 @@ export default function UploadClaimScreen() {
           uri: capturedImage.uri,
           type: 'image/jpeg',
           name: `image_${Date.now()}.jpg`,
+          isUploading: false,
+          isAnalyzed: false
         };
-        setImages([...images, newImage]);
+        
+        const newImages = [...images, newImage];
+        setImages(newImages);
+        
+        // If this is the first image, automatically analyze it
+        if (images.length === 0 && claimType === 'car_accident') {
+          analyzeImage(newImages.length - 1, newImages);
+        }
       }
     } catch (error) {
       console.error('Error taking photo:', error);
@@ -93,6 +119,73 @@ export default function UploadClaimScreen() {
     const updatedImages = [...images];
     updatedImages.splice(index, 1);
     setImages(updatedImages);
+    
+    // If the analyzed image was removed, clear analysis results
+    if (selectedImageIndex === index) {
+      setSelectedImageIndex(null);
+      setAnalysisResults(null);
+    } else if (selectedImageIndex !== null && selectedImageIndex > index) {
+      // Adjust selectedImageIndex if a previous image was removed
+      setSelectedImageIndex(selectedImageIndex - 1);
+    }
+  };
+
+  const analyzeImage = async (index: number, imageList = images) => {
+    if (index < 0 || index >= imageList.length) return;
+    
+    try {
+      setAnalyzing(true);
+      setSelectedImageIndex(index);
+      
+      // Mark the image as being analyzed
+      const updatedImages = [...imageList];
+      updatedImages[index] = {
+        ...updatedImages[index],
+        isUploading: true
+      };
+      setImages(updatedImages);
+      
+      // Upload and analyze the image
+      const analysisResult = await uploadClaimImageForAnalysis(updatedImages[index].uri);
+      
+      // Store analysis results
+      setAnalysisResults(analysisResult);
+      
+      // Save to session storage for use in the analysis screen
+      if (analysisResult) {
+        await AsyncStorage.setItem('claimAnalysisResults', JSON.stringify(analysisResult));
+        
+        // Also store the list of image URIs
+        const imageUris = imageList.map(img => img.uri);
+        await AsyncStorage.setItem('claimImageUris', JSON.stringify(imageUris));
+        
+        // Mark the image as analyzed
+        const finalImages = [...updatedImages];
+        finalImages[index] = {
+          ...finalImages[index],
+          isUploading: false,
+          isAnalyzed: true
+        };
+        setImages(finalImages);
+      }
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      Alert.alert(
+        'Analysis Error',
+        'Failed to analyze the image. Please try again or select a different image.'
+      );
+      
+      // Reset the image status
+      const resetImages = [...imageList];
+      resetImages[index] = {
+        ...resetImages[index],
+        isUploading: false,
+        isAnalyzed: false
+      };
+      setImages(resetImages);
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   const submitClaim = async () => {
@@ -100,17 +193,37 @@ export default function UploadClaimScreen() {
       Alert.alert('Missing Evidence', 'Please upload at least one image as evidence for your claim.');
       return;
     }
+    
+    if (!analysisResults && claimType === 'car_accident') {
+      Alert.alert('Analysis Required', 'Please analyze at least one image before proceeding.');
+      return;
+    }
 
     setLoading(true);
 
     try {
-      // Simulate API call to upload images and process them
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Save claim data needed for next screens
+      await AsyncStorage.setItem('claimType', claimType as string);
+      
+      if (incidentDate) {
+        await AsyncStorage.setItem('incidentDate', incidentDate as string);
+      }
+      
+      if (incidentLocation) {
+        await AsyncStorage.setItem('incidentLocation', incidentLocation as string);
+      }
+      
+      if (incidentDescription) {
+        await AsyncStorage.setItem('incidentDescription', incidentDescription as string);
+      }
 
       // Navigate to analysis screen
       router.push({
         pathname: '/claim/analysis',
-        params: { claimType }
+        params: { 
+          claimType,
+          hasAnalysis: analysisResults ? 'true' : 'false'
+        }
       });
     } catch (error) {
       console.error('Error submitting claim:', error);
@@ -145,7 +258,27 @@ export default function UploadClaimScreen() {
           <View className="flex-row flex-wrap">
             {images.map((image, index) => (
               <View key={index} className="w-1/3 p-1 relative">
-                <Image source={{ uri: image.uri }} className="h-32 rounded-lg" />
+                <TouchableOpacity 
+                  onPress={() => claimType === 'car_accident' ? analyzeImage(index) : null}
+                  disabled={image.isUploading}
+                  className={`${selectedImageIndex === index ? 'border-2 border-secondary' : ''}`}
+                >
+                  <Image 
+                    source={{ uri: image.uri }} 
+                    className="h-32 rounded-lg" 
+                  />
+                  {image.isUploading && (
+                    <View className="absolute inset-0 bg-black bg-opacity-50 items-center justify-center rounded-lg">
+                      <ActivityIndicator color="#FFFFFF" />
+                      <Text className="text-white text-xs mt-1">Analyzing...</Text>
+                    </View>
+                  )}
+                  {image.isAnalyzed && (
+                    <View className="absolute bottom-0 right-0 bg-green-500 p-1 rounded-tl-lg">
+                      <Text className="text-white text-xs">Analyzed</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => removeImage(index)}
                   className="absolute top-2 right-2 bg-tertiary rounded-full p-1"
@@ -173,6 +306,34 @@ export default function UploadClaimScreen() {
           </View>
         </View>
         
+        {claimType === 'car_accident' && analysisResults && (
+          <View className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <Text className="text-primary font-bold mb-2">Initial Analysis</Text>
+            <View className={`p-3 rounded-lg mb-3 ${
+              analysisResults.severity === 'minor' ? 'bg-green-100' :
+              analysisResults.severity === 'moderate' ? 'bg-yellow-100' : 'bg-red-100'
+            }`}>
+              <Text className={`font-medium ${
+                analysisResults.severity === 'minor' ? 'text-green-800' :
+                analysisResults.severity === 'moderate' ? 'text-yellow-800' : 'text-red-800'
+              }`}>
+                {analysisResults.severity === 'minor' ? 'Minor damage detected' :
+                 analysisResults.severity === 'moderate' ? 'Moderate damage detected' :
+                 'Severe damage detected'}
+              </Text>
+            </View>
+            <Text className="text-gray-600 mb-1">
+              Estimated repair cost: ${analysisResults.estimatedCost?.toLocaleString()}
+            </Text>
+            <Text className="text-gray-600 mb-2">Detected damages:</Text>
+            <View className="ml-3">
+              {analysisResults.affectedAreas.map((area: string, idx: number) => (
+                <Text key={idx} className="text-gray-600 mb-1">• {area}</Text>
+              ))}
+            </View>
+          </View>
+        )}
+        
         <View className="bg-white rounded-xl p-6 shadow-sm mb-6">
           <Text className="text-primary font-bold mb-2">AI Analysis</Text>
           <Text className="text-gray-600 mb-4">
@@ -188,9 +349,9 @@ export default function UploadClaimScreen() {
 
         <TouchableOpacity
           onPress={submitClaim}
-          disabled={loading}
+          disabled={loading || analyzing}
           className={`${
-            loading ? 'bg-gray-400' : 'bg-secondary'
+            loading || analyzing ? 'bg-gray-400' : 'bg-secondary'
           } rounded-xl p-4 items-center mb-6`}
         >
           {loading ? (

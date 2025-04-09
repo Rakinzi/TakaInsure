@@ -1,7 +1,11 @@
+// Updates to TakaInsure/app/(app)/claim/analysis.tsx
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getVehicleById } from '../../../services/vehicleService';
 
 // Type for analysis results
 type AnalysisResult = {
@@ -27,26 +31,121 @@ type AnalysisResult = {
     year: number;
     confidence: number;
   };
-  property?: {
-    type: string;
-    estimatedValue: number;
-  };
 };
 
 export default function AnalysisScreen() {
   const router = useRouter();
-  const { claimType } = useLocalSearchParams();
+  const { claimType, hasAnalysis } = useLocalSearchParams();
   const [analysis, setAnalysis] = useState<AnalysisResult>({
     status: 'processing',
     progress: 0,
     ownership: null,
     damage: null,
   });
+  const [loading, setLoading] = useState(true);
+  const [storedImages, setStoredImages] = useState<string[]>([]);
+  const [currentVehicle, setCurrentVehicle] = useState<any>(null);
+  const [claimData, setClaimData] = useState<any>(null);
 
   useEffect(() => {
-    // Simulate the analysis process
-    simulateAnalysis();
+    loadStoredData();
   }, []);
+
+  const loadStoredData = async () => {
+    setLoading(true);
+    
+    try {
+      // Get stored claim data
+      const incidentDate = await AsyncStorage.getItem('incidentDate');
+      const incidentLocation = await AsyncStorage.getItem('incidentLocation');
+      const incidentDescription = await AsyncStorage.getItem('incidentDescription');
+      
+      setClaimData({
+        incidentDate,
+        incidentLocation,
+        incidentDescription
+      });
+      
+      // Get stored analysis results
+      const analysisResultsStr = await AsyncStorage.getItem('claimAnalysisResults');
+      const imageUrisStr = await AsyncStorage.getItem('claimImageUris');
+      
+      let analysisResults = null;
+      if (analysisResultsStr) {
+        analysisResults = JSON.parse(analysisResultsStr);
+      }
+      
+      let imageUris: string[] = [];
+      if (imageUrisStr) {
+        imageUris = JSON.parse(imageUrisStr);
+        setStoredImages(imageUris);
+      }
+      
+      // If we already have analysis results, use them
+      if (analysisResults && hasAnalysis === 'true') {
+        setAnalysis({
+          status: 'complete',
+          progress: 100,
+          ownership: {
+            verified: true,
+            confidence: 89,
+            details: {
+              ownerName: 'Current User',
+              matchConfidence: 89,
+            },
+          },
+          damage: {
+            severity: analysisResults.severity,
+            estimatedCost: analysisResults.estimatedCost,
+            affectedAreas: analysisResults.affectedAreas || [],
+          },
+        });
+        
+        // Try to get vehicle information if this is a car claim
+        if (claimType === 'car_accident') {
+          await loadVehicleInfo();
+        }
+      } else {
+        // Otherwise, simulate the analysis process
+        simulateAnalysis();
+      }
+    } catch (error) {
+      console.error('Error loading stored data:', error);
+      Alert.alert('Error', 'Failed to load analysis data. Please try again.');
+      simulateAnalysis();
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const loadVehicleInfo = async () => {
+    try {
+      // For now, we'll get the first vehicle from the user's vehicles
+      const vehiclesStr = await AsyncStorage.getItem('userVehicles');
+      if (vehiclesStr) {
+        const vehicles = JSON.parse(vehiclesStr);
+        if (vehicles && vehicles.length > 0) {
+          const vehicle = await getVehicleById(vehicles[0].id);
+          if (vehicle) {
+            setCurrentVehicle(vehicle);
+            
+            // Update analysis with vehicle info
+            setAnalysis(prev => ({
+              ...prev,
+              vehicle: {
+                make: vehicle.carMake,
+                model: vehicle.carModel,
+                year: parseInt(vehicle.carYear || '2023'),
+                confidence: 95,
+              }
+            }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading vehicle info:', error);
+    }
+  };
 
   const simulateAnalysis = () => {
     // Start progress at 0
@@ -138,6 +237,23 @@ export default function AnalysisScreen() {
 
   const renderAnalysisResults = () => (
     <View>
+      {/* Images Preview */}
+      {storedImages.length > 0 && (
+        <View className="bg-white rounded-xl p-5 shadow-sm mb-4">
+          <Text className="text-primary font-bold text-lg mb-3">Uploaded Evidence</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
+            {storedImages.map((uri, index) => (
+              <Image
+                key={index}
+                source={{ uri }}
+                className="w-24 h-24 rounded-lg mr-2"
+                resizeMode="cover"
+              />
+            ))}
+          </ScrollView>
+        </View>
+      )}
+    
       {/* Ownership Verification Results */}
       <View className="bg-white rounded-xl p-5 shadow-sm mb-4">
         <Text className="text-primary font-bold text-lg mb-3">Ownership Verification</Text>

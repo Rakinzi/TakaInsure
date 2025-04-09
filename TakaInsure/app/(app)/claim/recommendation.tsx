@@ -1,3 +1,5 @@
+// Updates to TakaInsure/app/(app)/claim/recommendation.tsx
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -5,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../../services/supabaseClient';
 import { createInsuranceProduct, createPolicy } from '../../../services/policyService';
+import { createClaimWithAnalysis } from '../../../services/claimService';
 
 // Type definitions
 type InsurancePackage = {
@@ -35,9 +38,13 @@ export default function RecommendationScreen() {
   const [transaction, setTransaction] = useState<PolicyTransaction | null>(null);
   const [processingStep, setProcessingStep] = useState<string>('');
   const [policyId, setPolicyId] = useState<string | null>(null);
+  const [claimId, setClaimId] = useState<string | null>(null);
+  const [claimData, setClaimData] = useState<any>(null);
+  const [images, setImages] = useState<string[]>([]);
 
   useEffect(() => {
     loadUserData();
+    loadStoredClaimData();
     generatePackageRecommendations();
   }, [claimType, severity, cost]);
 
@@ -68,6 +75,33 @@ export default function RecommendationScreen() {
       }
     } catch (error) {
       console.error('Error loading user data:', error);
+    }
+  };
+
+  const loadStoredClaimData = async () => {
+    try {
+      // Load stored claim data from AsyncStorage
+      const incidentDate = await AsyncStorage.getItem('incidentDate');
+      const incidentLocation = await AsyncStorage.getItem('incidentLocation');
+      const incidentDescription = await AsyncStorage.getItem('incidentDescription');
+      const analysisResultsStr = await AsyncStorage.getItem('claimAnalysisResults');
+      const imageUrisStr = await AsyncStorage.getItem('claimImageUris');
+      
+      const claimData = {
+        incidentDate: incidentDate || new Date().toISOString().split('T')[0],
+        incidentLocation: incidentLocation || 'Unknown location',
+        incidentDescription: incidentDescription || 'Claim filed via mobile app',
+        analysisResults: analysisResultsStr ? JSON.parse(analysisResultsStr) : null
+      };
+      
+      setClaimData(claimData);
+      
+      if (imageUrisStr) {
+        const imageUris = JSON.parse(imageUrisStr);
+        setImages(imageUris);
+      }
+    } catch (error) {
+      console.error('Error loading stored claim data:', error);
     }
   };
 
@@ -245,6 +279,26 @@ export default function RecommendationScreen() {
       
       setPolicyId(newPolicyId);
       
+      // Create a claim if we have analysis results
+      if (claimData && claimData.analysisResults) {
+        setProcessingStep('Creating your claim...');
+        
+        // Create the claim
+        const newClaimId = await createClaimWithAnalysis(
+          newPolicyId,
+          claimData.incidentDate,
+          claimData.incidentLocation,
+          claimData.incidentDescription,
+          claimData.analysisResults,
+          images
+        );
+        
+        if (newClaimId) {
+          setClaimId(newClaimId);
+          console.log('Created claim with ID:', newClaimId);
+        }
+      }
+      
       // Create a simple transaction record for UI display
       const timestamp = new Date().toISOString();
       setTransaction({
@@ -265,6 +319,14 @@ export default function RecommendationScreen() {
           },
         ]
       );
+      
+      // Clear stored claim data
+      await AsyncStorage.removeItem('claimAnalysisResults');
+      await AsyncStorage.removeItem('claimImageUris');
+      await AsyncStorage.removeItem('incidentDate');
+      await AsyncStorage.removeItem('incidentLocation');
+      await AsyncStorage.removeItem('incidentDescription');
+      
     } catch (error) {
       console.error('Error subscribing to insurance:', error);
       Alert.alert('Error', 'Failed to subscribe to insurance package. Please try again.');
@@ -315,6 +377,16 @@ export default function RecommendationScreen() {
           <View className="mt-4 bg-secondary/10 p-4 rounded-lg">
             <Text className="text-primary font-medium mb-1">Your Policy ID</Text>
             <Text className="text-secondary font-bold">{policyId}</Text>
+          </View>
+        )}
+        
+        {claimId && (
+          <View className="mt-4 bg-primary/10 p-4 rounded-lg">
+            <Text className="text-primary font-medium mb-1">Your Claim ID</Text>
+            <Text className="text-primary font-bold">{claimId}</Text>
+            <Text className="text-gray-700 mt-2">
+              Your claim has been submitted and is under review. You'll be notified once it's processed.
+            </Text>
           </View>
         )}
       </View>

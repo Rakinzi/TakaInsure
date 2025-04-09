@@ -1731,3 +1731,238 @@ werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on 
 2025-04-08 22:54:48 [INFO] __init__ - create_app: Application initialized successfully
 2025-04-08 22:54:48 [INFO] app - <module>: Starting application on port 5000 with debug=True
 2025-04-08 22:54:48 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 23:03:59 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-08 23:03:59 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-08 23:03:59 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-08 23:04:05 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-08 23:04:06 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 23:04:06 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 23:04:06 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-08 23:04:06 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-08 23:04:10 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-08 23:04:11 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-08 23:04:11 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-08 23:04:11 [DEBUG] __init__ - <module>: interactive is False
+2025-04-08 23:04:11 [DEBUG] __init__ - <module>: platform is win32
+2025-04-08 23:04:11 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-08 23:04:11 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-08 23:04:15 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-08 23:04:15 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-08 23:04:16 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-08 23:04:16 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-08 23:04:16 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-08 23:04:16 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-08 23:04:17 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-08 23:04:17 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-08 23:04:18 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-08 23:04:18 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-08 23:04:18 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-08 23:04:18 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-08 23:46:15 [INFO] __init__ - before_request: Request started: POST /api/car-recognition/detect - IP: 192.168.1.121
+2025-04-08 23:46:15 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-08 23:46:15 [INFO] car_recognition - detect_car: Processing image of size 720x540
+2025-04-08 23:46:17 [INFO] car_recognition - detect_car: YOLO detection took 2.2011 seconds
+2025-04-08 23:46:19 [INFO] car_recognition - detect_car: Car classification took 2.4955 seconds
+2025-04-08 23:46:19 [INFO] __init__ - after_request: Request completed: POST /api/car-recognition/detect - Status: 200 - Duration: 4853.24ms
+2025-04-08 23:47:28 [INFO] __init__ - before_request: Request started: POST /api/license-plate/detect - IP: 192.168.1.121
+2025-04-08 23:47:28 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-08 23:47:28 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_p8ujmiw3_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_p8ujmiw3', '--oem', '1', '--psm', '7', 'txt']
+2025-04-08 23:47:30 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_fd73cgvk_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_fd73cgvk', '--oem', '1', '--psm', '8', 'txt']
+2025-04-08 23:47:30 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_z6gm11v__input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_z6gm11v_', '--oem', '1', '--psm', '10', 'txt']
+2025-04-08 23:47:30 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_9bnl0xlr_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_9bnl0xlr', '--oem', '1', '--psm', '11', 'txt']
+2025-04-08 23:47:30 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_8wmbwtq7_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_8wmbwtq7', '--oem', '1', '--psm', '6', 'txt']
+2025-04-08 23:47:31 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_gd2aj55i_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_gd2aj55i', '--oem', '1', '--psm', '7', 'txt']
+2025-04-08 23:47:31 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_6fy3wj2l_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_6fy3wj2l', '--oem', '1', '--psm', '8', 'txt']
+2025-04-08 23:47:31 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_ek4_znhl_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_ek4_znhl', '--oem', '1', '--psm', '10', 'txt']
+2025-04-08 23:47:31 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_h2jfyyc0_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_h2jfyyc0', '--oem', '1', '--psm', '11', 'txt']
+2025-04-08 23:47:31 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_z4py0bgz_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_z4py0bgz', '--oem', '1', '--psm', '6', 'txt']
+2025-04-08 23:47:32 [INFO] license_plate - detect_license_plate: License plate detected: wa
+2025-04-08 23:47:32 [INFO] __init__ - after_request: Request completed: POST /api/license-plate/detect - Status: 200 - Duration: 4189.27ms
+2025-04-08 23:48:50 [INFO] __init__ - before_request: Request started: POST /api/car-recognition/detect - IP: 192.168.1.24
+2025-04-08 23:48:51 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-08 23:48:51 [INFO] car_recognition - detect_car: Processing image of size 1286x965
+2025-04-08 23:48:51 [INFO] car_recognition - detect_car: YOLO detection took 0.7651 seconds
+2025-04-08 23:48:51 [INFO] car_recognition - detect_car: Car classification took 0.0147 seconds
+2025-04-08 23:48:51 [INFO] __init__ - after_request: Request completed: POST /api/car-recognition/detect - Status: 200 - Duration: 1766.84ms
+2025-04-08 23:49:36 [INFO] __init__ - before_request: Request started: POST /api/license-plate/detect - IP: 192.168.1.24
+2025-04-08 23:49:36 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-08 23:49:36 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_1w28cdmh_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_1w28cdmh', '--oem', '1', '--psm', '7', 'txt']
+2025-04-08 23:49:36 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_kxzpgyxn_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_kxzpgyxn', '--oem', '1', '--psm', '8', 'txt']
+2025-04-08 23:49:37 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_nn40gvhb_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_nn40gvhb', '--oem', '1', '--psm', '10', 'txt']
+2025-04-08 23:49:37 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_sq6vzhid_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_sq6vzhid', '--oem', '1', '--psm', '11', 'txt']
+2025-04-08 23:49:38 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_6llmhso3_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_6llmhso3', '--oem', '1', '--psm', '6', 'txt']
+2025-04-08 23:49:38 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_j53x328z_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_j53x328z', '--oem', '1', '--psm', '7', 'txt']
+2025-04-08 23:49:38 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_bxiz3o7t_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_bxiz3o7t', '--oem', '1', '--psm', '8', 'txt']
+2025-04-08 23:49:38 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_7g7owa7n_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_7g7owa7n', '--oem', '1', '--psm', '10', 'txt']
+2025-04-08 23:49:38 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_knag5e9w_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_knag5e9w', '--oem', '1', '--psm', '11', 'txt']
+2025-04-08 23:49:39 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess__icilqrn_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess__icilqrn', '--oem', '1', '--psm', '6', 'txt']
+2025-04-08 23:49:39 [INFO] license_plate - detect_license_plate: License plate detected: - Sse
+2025-04-08 23:49:39 [INFO] __init__ - after_request: Request completed: POST /api/license-plate/detect - Status: 200 - Duration: 2769.58ms
+2025-04-09 00:01:02 [INFO] __init__ - before_request: Request started: POST /api/car-recognition/detect - IP: 192.168.1.121
+2025-04-09 00:01:02 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-09 00:01:02 [INFO] car_recognition - detect_car: Processing image of size 720x540
+2025-04-09 00:01:03 [INFO] car_recognition - detect_car: YOLO detection took 0.7647 seconds
+2025-04-09 00:01:03 [INFO] car_recognition - detect_car: Car classification took 0.0368 seconds
+2025-04-09 00:01:03 [INFO] __init__ - after_request: Request completed: POST /api/car-recognition/detect - Status: 200 - Duration: 893.13ms
+2025-04-09 00:02:00 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-09 00:02:00 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-09 00:02:00 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-09 00:02:10 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-09 00:02:12 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-09 00:02:12 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-09 00:02:12 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-09 00:02:12 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-09 00:02:20 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-09 00:02:22 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-09 00:02:22 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-09 00:02:22 [DEBUG] __init__ - <module>: interactive is False
+2025-04-09 00:02:22 [DEBUG] __init__ - <module>: platform is win32
+2025-04-09 00:02:22 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-09 00:02:22 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-09 00:02:29 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-09 00:02:29 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-09 00:02:31 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-09 00:02:31 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-09 00:02:31 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-09 00:02:31 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-09 00:02:32 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-09 00:02:32 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-09 00:02:33 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-09 00:02:33 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-09 00:02:33 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-09 00:02:33 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-09 00:06:22 [INFO] __init__ - before_request: Request started: POST /api/car-recognition/detect - IP: 192.168.1.121
+2025-04-09 00:06:22 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-09 00:06:22 [INFO] car_recognition - detect_car: Processing image of size 720x540
+2025-04-09 00:06:23 [INFO] car_recognition - detect_car: YOLO detection took 1.7712 seconds
+2025-04-09 00:06:25 [INFO] car_recognition - detect_car: Car classification took 1.3455 seconds
+2025-04-09 00:06:25 [INFO] __init__ - after_request: Request completed: POST /api/car-recognition/detect - Status: 200 - Duration: 3247.64ms
+2025-04-09 00:07:40 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-09 00:07:40 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-09 00:07:40 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-09 00:07:43 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-09 00:07:44 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-09 00:07:44 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-09 00:07:44 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-09 00:07:44 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-09 00:07:46 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-09 00:07:46 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-09 00:07:46 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-09 00:07:46 [DEBUG] __init__ - <module>: interactive is False
+2025-04-09 00:07:46 [DEBUG] __init__ - <module>: platform is win32
+2025-04-09 00:07:46 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-09 00:07:46 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-09 00:07:49 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-09 00:07:49 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-09 00:07:51 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-09 00:07:51 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-09 00:07:51 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-09 00:07:51 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-09 00:07:52 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-09 00:07:52 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-09 00:07:53 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-09 00:07:53 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-09 00:07:53 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-09 00:07:53 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-09 00:21:19 [INFO] __init__ - before_request: Request started: POST /api/car-recognition/detect - IP: 192.168.1.121
+2025-04-09 00:21:19 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-09 00:21:19 [INFO] car_recognition - detect_car: Processing image of size 1000x750
+2025-04-09 00:21:21 [INFO] car_recognition - detect_car: YOLO detection took 1.8148 seconds
+2025-04-09 00:21:22 [INFO] car_recognition - detect_car: Car classification took 1.3886 seconds
+2025-04-09 00:21:22 [INFO] __init__ - after_request: Request completed: POST /api/car-recognition/detect - Status: 200 - Duration: 3328.56ms
+2025-04-09 00:21:33 [INFO] __init__ - before_request: Request started: POST /api/car-recognition/detect - IP: 192.168.1.24
+2025-04-09 00:21:33 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-09 00:21:33 [INFO] car_recognition - detect_car: Processing image of size 1286x965
+2025-04-09 00:21:34 [INFO] car_recognition - detect_car: YOLO detection took 0.7355 seconds
+2025-04-09 00:21:34 [INFO] car_recognition - detect_car: Car classification took 0.0161 seconds
+2025-04-09 00:21:34 [INFO] __init__ - after_request: Request completed: POST /api/car-recognition/detect - Status: 200 - Duration: 998.64ms
+2025-04-09 00:21:53 [INFO] __init__ - before_request: Request started: POST /api/license-plate/detect - IP: 192.168.1.24
+2025-04-09 00:21:53 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-09 00:21:54 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_i7k6ra1n_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_i7k6ra1n', '--oem', '1', '--psm', '7', 'txt']
+2025-04-09 00:21:55 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_nwtypgra_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_nwtypgra', '--oem', '1', '--psm', '8', 'txt']
+2025-04-09 00:21:56 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_opk708va_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_opk708va', '--oem', '1', '--psm', '10', 'txt']
+2025-04-09 00:21:56 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_jxd85hpt_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_jxd85hpt', '--oem', '1', '--psm', '11', 'txt']
+2025-04-09 00:21:56 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_ubtgqgn6_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_ubtgqgn6', '--oem', '1', '--psm', '6', 'txt']
+2025-04-09 00:21:56 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess__vm28a0j_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess__vm28a0j', '--oem', '1', '--psm', '7', 'txt']
+2025-04-09 00:21:56 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_e7m8ojs6_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_e7m8ojs6', '--oem', '1', '--psm', '8', 'txt']
+2025-04-09 00:21:57 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_lcyra_v4_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_lcyra_v4', '--oem', '1', '--psm', '10', 'txt']
+2025-04-09 00:21:57 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_jast1w58_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_jast1w58', '--oem', '1', '--psm', '11', 'txt']
+2025-04-09 00:21:57 [DEBUG] pytesseract - run_tesseract: ['C:\\Program Files\\Tesseract-OCR\\tesseract.exe', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_j48yxggk_input.PNG', 'C:\\Users\\Silver\\AppData\\Local\\Temp\\tess_j48yxggk', '--oem', '1', '--psm', '6', 'txt']
+2025-04-09 00:21:57 [INFO] license_plate - detect_license_plate: License plate detected: od
+2025-04-09 00:21:57 [INFO] __init__ - after_request: Request completed: POST /api/license-plate/detect - Status: 200 - Duration: 3763.9ms
+2025-04-09 10:31:12 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-09 10:31:12 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-09 10:31:12 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-09 10:31:39 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-09 10:31:44 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-09 10:31:44 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-09 10:31:44 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-09 10:31:44 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-09 10:31:58 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-09 10:32:01 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-09 10:32:02 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-09 10:32:02 [DEBUG] __init__ - <module>: interactive is False
+2025-04-09 10:32:02 [DEBUG] __init__ - <module>: platform is win32
+2025-04-09 10:32:02 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-09 10:32:02 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-09 10:32:13 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-09 10:32:13 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-09 10:32:20 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-09 10:32:22 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-09 10:32:22 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-09 10:32:22 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-09 10:32:41 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-09 10:32:42 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-09 10:32:43 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-09 10:32:43 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-09 10:32:43 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-09 10:33:36 [INFO] supabase_service - get_supabase_client: Creating Supabase client
+2025-04-09 10:33:36 [DEBUG] _config - load_ssl_context: load_ssl_context verify=True cert=None trust_env=True http2=False
+2025-04-09 10:33:36 [DEBUG] _config - load_ssl_context_verify: load_verify_locations cafile='C:\\Users\\Silver\\AppData\\Local\\anaconda3\\Library\\ssl\\cacert.pem'
+2025-04-09 10:34:24 [DEBUG] tpu_cluster_resolver - <module>: Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+2025-04-09 10:34:34 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-09 10:34:34 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-09 10:34:34 [DEBUG] __init__ - <module>: Creating converter from 7 to 5
+2025-04-09 10:34:34 [DEBUG] __init__ - <module>: Creating converter from 5 to 7
+2025-04-09 10:34:58 [INFO] utils - _init_num_threads: NumExpr defaulting to 4 threads.
+2025-04-09 10:35:00 [DEBUG] __init__ - wrapper: matplotlib data path: C:\Users\Silver\AppData\Local\anaconda3\Lib\site-packages\matplotlib\mpl-data
+2025-04-09 10:35:00 [DEBUG] __init__ - wrapper: CONFIGDIR=C:\Users\Silver\.matplotlib
+2025-04-09 10:35:00 [DEBUG] __init__ - <module>: interactive is False
+2025-04-09 10:35:00 [DEBUG] __init__ - <module>: platform is win32
+2025-04-09 10:35:00 [DEBUG] __init__ - wrapper: CACHEDIR=C:\Users\Silver\.matplotlib
+2025-04-09 10:35:00 [DEBUG] font_manager - _load_fontmanager: Using fontManager instance from C:\Users\Silver\.matplotlib\fontlist-v390.json
+2025-04-09 10:35:06 [INFO] car_damage - __init__: Loaded car damage detection model from best.onnx
+2025-04-09 10:35:06 [INFO] car_damage - <module>: Car damage detection model initialized successfully
+2025-04-09 10:35:09 [WARNING] module_wrapper - _tfmw_add_deprecation_warning: From C:\Users\Silver\Desktop\TakaInsure2\app\blueprints\car_recognition.py:39: The name tf.GraphDef is deprecated. Please use tf.compat.v1.GraphDef instead.
+
+2025-04-09 10:35:09 [INFO] car_recognition - <module>: Car make/model classifier initialized successfully
+2025-04-09 10:35:09 [INFO] car_recognition - <module>: COCO labels loaded successfully
+2025-04-09 10:35:09 [INFO] car_recognition - <module>: Loading YOLO model from disk...
+2025-04-09 10:35:10 [INFO] car_recognition - <module>: YOLO model loaded with CUDA support
+2025-04-09 10:35:10 [INFO] image_processing - <module>: Car make classifier initialized successfully
+2025-04-09 10:35:11 [INFO] image_processing - initialize_yolo: YOLO model initialized successfully
+2025-04-09 10:35:11 [INFO] __init__ - create_app: Application initialized successfully
+2025-04-09 10:35:11 [INFO] app - <module>: Starting application on port 5000 with debug=True
+2025-04-09 10:35:11 [WARNING] _internal - _log:  * Debugger is active!
+2025-04-09 10:35:58 [INFO] __init__ - before_request: Request started: POST /api/car-recognition/detect - IP: 192.168.1.121
+2025-04-09 10:35:58 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-09 10:35:58 [INFO] car_recognition - detect_car: Processing image of size 720x540
+2025-04-09 10:36:00 [INFO] car_recognition - detect_car: YOLO detection took 2.6096 seconds
+2025-04-09 10:36:03 [INFO] car_recognition - detect_car: Car classification took 2.3267 seconds
+2025-04-09 10:36:03 [INFO] __init__ - after_request: Request completed: POST /api/car-recognition/detect - Status: 200 - Duration: 5171.29ms
+2025-04-09 10:42:28 [INFO] __init__ - before_request: Request started: POST /api/car-recognition/detect - IP: 192.168.1.121
+2025-04-09 10:42:28 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-09 10:42:28 [INFO] car_recognition - detect_car: Processing image of size 720x540
+2025-04-09 10:42:29 [INFO] car_recognition - detect_car: YOLO detection took 1.2860 seconds
+2025-04-09 10:42:29 [INFO] car_recognition - detect_car: Car classification took 0.0122 seconds
+2025-04-09 10:42:29 [INFO] __init__ - after_request: Request completed: POST /api/car-recognition/detect - Status: 200 - Duration: 1436.27ms
+2025-04-09 10:44:42 [INFO] __init__ - before_request: Request started: POST /api/car-recognition/detect - IP: 192.168.1.121
+2025-04-09 10:44:42 [INFO] __init__ - before_request: Files included in request: ['file']
+2025-04-09 10:44:42 [INFO] car_recognition - detect_car: Processing image of size 720x540
+2025-04-09 10:44:43 [INFO] car_recognition - detect_car: YOLO detection took 0.9042 seconds
+2025-04-09 10:44:43 [INFO] car_recognition - detect_car: Car classification took 0.0295 seconds
+2025-04-09 10:44:43 [INFO] __init__ - after_request: Request completed: POST /api/car-recognition/detect - Status: 200 - Duration: 1064.0ms

@@ -15,6 +15,7 @@ export default function VehicleCaptureScreen() {
    
     try {
       // Register the vehicle
+      console.log(vehicleData)
       await registerVehicle(vehicleData);
      
       // Show success message

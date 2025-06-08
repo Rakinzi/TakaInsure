@@ -104,7 +104,7 @@ export const detectCarMakeModel = async (imageUri: string): Promise<VehicleDetec
     
     return null;
   } catch (error) {
-    console.error('Car make/model detection error:', error);
+    console.error('Car make/model detection error:');
     throw error;
   }
 };
@@ -142,6 +142,7 @@ export const uploadImageToServer = async (
     // Get API URL
     const API_URL = await getApiUrl();
     
+    console.log(API_URL)
     // Get auth headers if available
     let headers = {};
     try {

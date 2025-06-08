@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../../services/supabaseClient';
 import { createInsuranceProduct, createPolicy } from '../../../services/policyService';
 import { createClaimWithAnalysis } from '../../../services/claimService';
+import PremiumPaymentModal from '@/components/payment/PremiumPaymentModal';
 
 // Type definitions
 type InsurancePackage = {
@@ -307,6 +308,7 @@ export default function RecommendationScreen() {
         timestamp,
         success: true
       });
+      
       
       // Show success message
       Alert.alert(

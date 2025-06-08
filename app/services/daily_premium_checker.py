@@ -150,7 +150,7 @@ def start_premium_checker_thread():
                 logger.exception(f"Error in premium checker thread: {str(e)}")
             
             # Sleep for 1 hour between checks
-            time.sleep(5)
+            time.sleep(1000)
     
     # Start the thread
     thread = threading.Thread(target=run_daily_check, daemon=True)

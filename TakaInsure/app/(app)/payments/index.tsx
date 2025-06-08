@@ -104,9 +104,7 @@ export default function PaymentHistoryScreen() {
             <FlatList
               data={payments}
               renderItem={renderPaymentItem}
-              keyExtractor={(item, index) => 
-                item.payment_id || item.transaction_reference || `payment-${index}`
-              }
+              keyExtractor={(item) => item.payment_id}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 20 }}
               refreshing={loading}

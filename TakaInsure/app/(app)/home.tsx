@@ -196,7 +196,7 @@ export default function HomeScreen() {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.multiRemove(['userToken', 'userData', 'policyHolderId', 'phoneNumber']);
+      await AsyncStorage.multiRemove(['userToken', 'userData', 'policyHolderId', 'phoneNumber', 'lastPremiumPaymentDate']);
       router.replace('/login');
     } catch (error) {
       console.error('Error during logout:', error);

@@ -5,12 +5,9 @@ import os
 import time
 import logging
 
-# Import the classifier code directly
-import numpy as np
 import json
 import tensorflow.compat.v1 as tf
 from PIL import Image, ImageOps
-import cv2
 import io
 
 logger = logging.getLogger(__name__)
@@ -57,37 +54,32 @@ def resizeAndPad(img, size, padColor=0):
     h, w = img.shape[:2]
     sh, sw = size
 
-    # interpolation method
-    if h > sh or w > sw: # shrinking image
+    if h > sh or w > sw:
         interp = cv2.INTER_AREA
-    else: # stretching image
+    else:
         interp = cv2.INTER_CUBIC
 
-    # aspect ratio of image
-    aspect = w/h  # if on Python 2, you might need to cast as a float: float(w)/h
+    aspect = w/h
 
-    # compute scaling and pad sizing
-    if aspect > 1: # horizontal image
+    if aspect > 1:  # horizontal image
         new_w = sw
         new_h = np.round(new_w/aspect).astype(int)
         pad_vert = (sh-new_h)/2
         pad_top, pad_bot = np.floor(pad_vert).astype(int), np.ceil(pad_vert).astype(int)
         pad_left, pad_right = 0, 0
-    elif aspect < 1: # vertical image
+    elif aspect < 1:  # vertical image
         new_h = sh
         new_w = np.round(new_h*aspect).astype(int)
         pad_horz = (sw-new_w)/2
         pad_left, pad_right = np.floor(pad_horz).astype(int), np.ceil(pad_horz).astype(int)
         pad_top, pad_bot = 0, 0
-    else: # square image
+    else:  # square image
         new_h, new_w = sh, sw
-        pad_left, pad_right, pad_top, pad_bot = 0, 0, 0, 0
+        pad_left = pad_right = pad_top = pad_bot = 0
 
-    # set pad color
-    if len(img.shape) is 3 and not isinstance(padColor, (list, tuple, np.ndarray)): # color image but only one color provided
+    if len(img.shape) == 3 and not isinstance(padColor, (list, tuple, np.ndarray)):
         padColor = [padColor]*3
 
-    # scale and pad
     scaled_img = cv2.resize(img, (new_w, new_h), interpolation=interp)
     scaled_img = cv2.copyMakeBorder(scaled_img, pad_top, pad_bot, pad_left, pad_right, borderType=cv2.BORDER_CONSTANT, value=padColor)
 
@@ -95,10 +87,10 @@ def resizeAndPad(img, size, padColor=0):
 
 class Classifier():
     def __init__(self):
-        # uncomment the next 3 lines if you want to use CPU instead of GPU
-        #import os
-        #os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        #os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+        # Uncomment these to force CPU usage if desired.
+        # import os
+        # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
         self.graph = load_graph(model_file)
         self.labels = load_labels(label_file)
@@ -109,16 +101,12 @@ class Classifier():
         self.output_operation = self.graph.get_operation_by_name(output_name)
 
         self.sess = tf.Session(graph=self.graph)
-        self.sess.graph.finalize()  # Graph is read-only after this statement.
+        self.sess.graph.finalize()
 
     def predict(self, img):
         img = img[:, :, ::-1]
         img = resizeAndPad(img, classifier_input_size)
-
-        # Add a forth dimension since Tensorflow expects a list of images
         img = np.expand_dims(img, axis=0)
-
-        # Scale the input image to the range used in the trained network
         img = img.astype(np.float32)
         img /= 127.5
         img -= 1.
@@ -134,7 +122,7 @@ class Classifier():
         for ix in top_indices:
             make_model = self.labels[ix].split('\t')
             classes.append({"make": make_model[0], "model": make_model[1], "prob": str(results[ix])})
-        return(classes)
+        return classes
 
 # Initialize the car classifier
 try:
@@ -161,13 +149,12 @@ try:
     logger.info("Loading YOLO model from disk...")
     net = cv2.dnn.readNetFromDarknet(config_path, weights_path)
     
-    # Attempt to use GPU if available
     try:
         net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
         logger.info("YOLO model loaded with CUDA support")
-    except:
-        # Fallback to CPU
+    except Exception as e:
+        logger.warning(f"CUDA configuration failed: {e}. Falling back to CPU.")
         net.setPreferableBackend(cv2.dnn.DNN_BACKEND_DEFAULT)
         net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
         logger.info("YOLO model loaded with CPU support")
@@ -196,7 +183,6 @@ def detect_car():
         return jsonify({"error": "No selected file"}), 400
         
     try:
-        # Read the image
         file_bytes = file.read()
         np_arr = np.frombuffer(file_bytes, np.uint8)
         image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -205,57 +191,55 @@ def detect_car():
             logger.error("Failed to decode image")
             return jsonify({"error": "Invalid image format"}), 400
         
-        # Get image dimensions
         (H, W) = image.shape[:2]
         logger.info(f"Processing image of size {W}x{H}")
         
-        # Determine only the output layer names that we need from YOLO
         layer_names = net.getLayerNames()
         try:
-            # Handle different OpenCV versions
             output_layers = []
             for i in net.getUnconnectedOutLayers():
                 if isinstance(i, (list, np.ndarray)):
                     output_layers.append(layer_names[i[0] - 1])
                 else:
                     output_layers.append(layer_names[i - 1])
-        except:
-            # Alternative approach for older OpenCV versions
+        except Exception:
             try:
                 output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
-            except:
+            except Exception:
                 output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
         
-        # Construct a blob from the input image and perform a forward pass
         blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (416, 416),
-            swapRB=True, crop=False)
+                                      swapRB=True, crop=False)
         net.setInput(blob)
         
         start = time.time()
-        outputs = net.forward(output_layers)
+        try:
+            outputs = net.forward(output_layers)
+        except cv2.error as e:
+            # If the CUDA backend is misbehaving, switch to CPU and retry.
+            logger.error(f"Error during YOLO forward pass with CUDA: {e}. Switching to CPU fallback.")
+            net.setPreferableBackend(cv2.dnn.DNN_BACKEND_DEFAULT)
+            net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+            start = time.time()  # restart timing for CPU processing
+            outputs = net.forward(output_layers)
         end = time.time()
         
         logger.info(f"YOLO detection took {end - start:.4f} seconds")
         
-        # Initialize lists of detected boxes, confidences, and class IDs
         boxes = []
         confidences = []
         classIDs = []
         
-        # Process the output layers
         for output in outputs:
             for detection in output:
                 scores = detection[5:]
                 classID = np.argmax(scores)
                 confidence = scores[classID]
                 
-                # Filter out weak predictions
                 if confidence > CONFIDENCE_THRESHOLD:
-                    # Scale the bounding box
                     box = detection[0:4] * np.array([W, H, W, H])
                     (centerX, centerY, width, height) = box.astype("int")
                     
-                    # Calculate top-left coordinates
                     x = int(centerX - (width / 2))
                     y = int(centerY - (height / 2))
                     
@@ -263,50 +247,39 @@ def detect_car():
                     confidences.append(float(confidence))
                     classIDs.append(classID)
         
-        # Apply non-maxima suppression
         idxs = cv2.dnn.NMSBoxes(boxes, confidences, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
         
-        # Initialize result array
         results = []
         
-        # Process detections
         if len(idxs) > 0:
-            # Handle different return formats from NMSBoxes
             if isinstance(idxs, tuple):
-                idxs = idxs[0]  # For some OpenCV versions
+                idxs = idxs[0]
                 
-            # Process the indices
             for i in (idxs.flatten() if hasattr(idxs, 'flatten') else idxs):
-                # Extract the bounding box coordinates
                 (x, y) = (boxes[i][0], boxes[i][1])
                 (w, h) = (boxes[i][2], boxes[i][3])
                 
-                # Only process car detections (class ID 2 in COCO)
-                if classIDs[i] == 2:  # Car class in COCO
-                    # Ensure we don't exceed image boundaries
+                # Process car detections (assuming classID 2 represents cars in COCO)
+                if classIDs[i] == 2:
                     y1 = max(y, 0)
                     y2 = min(y + h, H)
                     x1 = max(x, 0)
                     x2 = min(x + w, W)
                     
-                    # Skip if we have a degenerate box
                     if y2 <= y1 or x2 <= x1:
                         continue
                     
-                    # Crop the car image
                     car_image = image[y1:y2, x1:x2]
                     
                     if car_image.size == 0:
                         continue
                     
-                    # Classify the car make and model
                     start_time = time.time()
                     car_predictions = car_classifier.predict(car_image)
                     end_time = time.time()
                     
                     logger.info(f"Car classification took {end_time - start_time:.4f} seconds")
                     
-                    # Add results to the list
                     result = {
                         "bbox": [x, y, w, h],
                         "confidence": float(confidences[i]),
@@ -316,7 +289,6 @@ def detect_car():
                     
                     results.append(result)
                 else:
-                    # For non-car objects, just return the class
                     if len(LABELS) > classIDs[i]:
                         class_name = LABELS[classIDs[i]]
                     else:
@@ -331,7 +303,6 @@ def detect_car():
                     
                     results.append(result)
         
-        # Return the results
         return jsonify({
             "results": results,
             "detected_count": len(results),
